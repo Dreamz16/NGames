@@ -24,18 +24,19 @@ namespace NGames.UI
             go.AddComponent<GameVariablesPanel>();
         }
 
-        private GameObject       _root;
-        private TextMeshProUGUI  _content;
-        private bool             _visible;
-        private float            _refreshTimer;
-        private const float      RefreshInterval = 0.5f;
+        private GameObject      _root;
+        private TextMeshProUGUI _content;
+        private RectTransform   _contentRt;
+        private bool            _visible;
+        private float           _refreshTimer;
+        private const float     RefreshInterval = 0.5f;
 
         private void Awake() => BuildUI();
 
         // ── UI construction ────────────────────────────────────────────────────
         private void BuildUI()
         {
-            // Overlay canvas — always on top
+            // Overlay canvas
             var cgo    = new GameObject("Canvas");
             cgo.transform.SetParent(transform, false);
             var canvas = cgo.AddComponent<Canvas>();
@@ -46,36 +47,40 @@ namespace NGames.UI
             scaler.referenceResolution = new Vector2(1920, 1080);
             cgo.AddComponent<GraphicRaycaster>();
 
-            // Panel root — right quarter of screen
+            // Panel — right 28% of screen
             _root = new GameObject("Panel");
             _root.transform.SetParent(cgo.transform, false);
-            var panelImg = _root.AddComponent<Image>();
-            panelImg.color = new Color(0.05f, 0.05f, 0.08f, 0.93f);
+            _root.AddComponent<Image>().color = new Color(0.04f, 0.04f, 0.07f, 0.95f);
             var panelRt = _root.GetComponent<RectTransform>();
             panelRt.anchorMin = new Vector2(0.72f, 0f);
-            panelRt.anchorMax = new Vector2(1f,    1f);
+            panelRt.anchorMax = Vector2.one;
             panelRt.offsetMin = panelRt.offsetMax = Vector2.zero;
 
-            // Header bar
-            var header = MakeRect("Header", _root.transform);
-            header.anchorMin = new Vector2(0f, 0.96f);
-            header.anchorMax = Vector2.one;
-            header.offsetMin = header.offsetMax = Vector2.zero;
-            var headerImg = header.gameObject.AddComponent<Image>();
-            headerImg.color = new Color(0.12f, 0.08f, 0.25f, 1f);
+            // Header
+            var headerGo = new GameObject("Header");
+            headerGo.transform.SetParent(_root.transform, false);
+            headerGo.AddComponent<Image>().color = new Color(0.15f, 0.08f, 0.30f, 1f);
+            var headerRt = headerGo.GetComponent<RectTransform>();
+            headerRt.anchorMin = new Vector2(0f, 0.96f);
+            headerRt.anchorMax = Vector2.one;
+            headerRt.offsetMin = headerRt.offsetMax = Vector2.zero;
 
-            var titleGo  = MakeRect("Title", header.transform);
-            titleGo.anchorMin = Vector2.zero; titleGo.anchorMax = Vector2.one;
-            titleGo.offsetMin = new Vector2(12, 0); titleGo.offsetMax = Vector2.zero;
-            var titleTmp = titleGo.gameObject.AddComponent<TextMeshProUGUI>();
-            titleTmp.text      = "GAME VARIABLES  <size=70%><color=#888>[` or F2 to hide]</color></size>";
-            titleTmp.fontSize  = 18;
-            titleTmp.alignment = TextAlignmentOptions.MidlineLeft;
-            titleTmp.color     = new Color(0.9f, 0.85f, 1f, 1f);
-            titleTmp.fontStyle = FontStyles.Bold;
+            var headerTextGo = new GameObject("HeaderText");
+            headerTextGo.transform.SetParent(headerGo.transform, false);
+            var headerTmp = headerTextGo.AddComponent<TextMeshProUGUI>();
+            headerTmp.text      = "GAME VARIABLES  <size=70%><color=#888>[ ` or F2 ]</color></size>";
+            headerTmp.fontSize  = 17;
+            headerTmp.fontStyle = FontStyles.Bold;
+            headerTmp.color     = new Color(0.88f, 0.80f, 1f, 1f);
+            headerTmp.alignment = TextAlignmentOptions.MidlineLeft;
+            var headerTextRt = headerTextGo.GetComponent<RectTransform>();
+            headerTextRt.anchorMin = Vector2.zero;
+            headerTextRt.anchorMax = Vector2.one;
+            headerTextRt.offsetMin = new Vector2(10, 0);
+            headerTextRt.offsetMax = Vector2.zero;
 
             // Scroll view
-            var scrollGo = new GameObject("Scroll");
+            var scrollGo = new GameObject("ScrollView");
             scrollGo.transform.SetParent(_root.transform, false);
             var scrollRt = scrollGo.AddComponent<RectTransform>();
             scrollRt.anchorMin = new Vector2(0f, 0f);
@@ -83,41 +88,50 @@ namespace NGames.UI
             scrollRt.offsetMin = scrollRt.offsetMax = Vector2.zero;
 
             var scrollRect = scrollGo.AddComponent<ScrollRect>();
-            scrollRect.horizontal = false;
+            scrollRect.horizontal          = false;
+            scrollRect.scrollSensitivity   = 30f;
+            scrollRect.movementType        = ScrollRect.MovementType.Clamped;
 
             // Viewport
-            var viewport = MakeRect("Viewport", scrollGo.transform);
-            viewport.anchorMin = Vector2.zero; viewport.anchorMax = Vector2.one;
-            viewport.offsetMin = viewport.offsetMax = Vector2.zero;
-            viewport.gameObject.AddComponent<Image>().color = Color.clear;
-            var mask = viewport.gameObject.AddComponent<Mask>();
+            var viewportGo = new GameObject("Viewport");
+            viewportGo.transform.SetParent(scrollGo.transform, false);
+            var viewportImg = viewportGo.AddComponent<Image>();
+            viewportImg.color = Color.clear;
+            var mask = viewportGo.AddComponent<Mask>();
             mask.showMaskGraphic = false;
-            scrollRect.viewport = viewport;
+            var viewportRt = viewportGo.GetComponent<RectTransform>();
+            viewportRt.anchorMin = Vector2.zero;
+            viewportRt.anchorMax = Vector2.one;
+            viewportRt.offsetMin = viewportRt.offsetMax = Vector2.zero;
+            scrollRect.viewport = viewportRt;
 
-            // Content
-            var contentGo = MakeRect("Content", viewport.transform);
-            contentGo.anchorMin = new Vector2(0f, 1f);
-            contentGo.anchorMax = new Vector2(1f, 1f);
-            contentGo.pivot     = new Vector2(0.5f, 1f);
-            contentGo.offsetMin = contentGo.offsetMax = Vector2.zero;
-            var csf = contentGo.gameObject.AddComponent<ContentSizeFitter>();
+            // Content rect — height is driven by the TMP preferred height
+            var contentGo = new GameObject("Content");
+            contentGo.transform.SetParent(viewportGo.transform, false);
+            _contentRt            = contentGo.AddComponent<RectTransform>();
+            _contentRt.anchorMin  = new Vector2(0f, 1f);
+            _contentRt.anchorMax  = new Vector2(1f, 1f);
+            _contentRt.pivot      = new Vector2(0.5f, 1f);
+            _contentRt.offsetMin  = _contentRt.offsetMax = Vector2.zero;
+            var csf = contentGo.AddComponent<ContentSizeFitter>();
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            var vlg = contentGo.gameObject.AddComponent<VerticalLayoutGroup>();
-            vlg.padding            = new RectOffset(12, 12, 8, 8);
-            vlg.childForceExpandWidth = true;
-            vlg.childControlWidth     = true;
-            vlg.childControlHeight    = true;
-            scrollRect.content = contentGo;
+            scrollRect.content = _contentRt;
 
-            // Text body
+            // The text
             var textGo = new GameObject("Text");
             textGo.transform.SetParent(contentGo.transform, false);
-            _content = textGo.AddComponent<TextMeshProUGUI>();
-            _content.fontSize  = 15;
-            _content.color     = new Color(0.85f, 0.95f, 0.85f, 1f);
-            _content.alignment = TextAlignmentOptions.TopLeft;
-            _content.richText  = true;
-            textGo.AddComponent<LayoutElement>().flexibleWidth = 1;
+            _content             = textGo.AddComponent<TextMeshProUGUI>();
+            _content.fontSize    = 15;
+            _content.color       = new Color(0.85f, 0.95f, 0.85f, 1f);
+            _content.alignment   = TextAlignmentOptions.TopLeft;
+            _content.richText    = true;
+            _content.overflowMode = TextOverflowModes.Overflow;
+            _content.enableWordWrapping = true;
+            var textRt           = textGo.GetComponent<RectTransform>();
+            textRt.anchorMin     = Vector2.zero;
+            textRt.anchorMax     = Vector2.one;
+            textRt.offsetMin     = new Vector2(10,  8);
+            textRt.offsetMax     = new Vector2(-6, -4);
 
             _root.SetActive(false);
         }
@@ -125,16 +139,15 @@ namespace NGames.UI
         // ── Toggle & refresh ───────────────────────────────────────────────────
         private void Update()
         {
-            bool toggle =
-                (Keyboard.current != null && (
-                    Keyboard.current.backquoteKey.wasPressedThisFrame ||
-                    Keyboard.current.f2Key.wasPressedThisFrame));
+            bool toggle = Keyboard.current != null && (
+                Keyboard.current.backquoteKey.wasPressedThisFrame ||
+                Keyboard.current.f2Key.wasPressedThisFrame);
 
             if (toggle)
             {
                 _visible = !_visible;
                 _root.SetActive(_visible);
-                if (_visible) Refresh();
+                if (_visible) { Refresh(); _refreshTimer = 0f; }
             }
 
             if (_visible)
@@ -158,7 +171,7 @@ namespace NGames.UI
             sb.AppendLine(Row("ID",          nm?.CurrentEpisodeId ?? "—"));
             sb.AppendLine(Row("Active",      nm?.IsStoryActive.ToString() ?? "—"));
             sb.AppendLine(Row("CanContinue", nm?.CanContinue.ToString()   ?? "—"));
-            sb.AppendLine(Row("Choices",     nm?.CurrentChoices?.Count.ToString() ?? "0"));
+            sb.AppendLine(Row("Choices",    (nm?.CurrentChoices?.Count ?? 0).ToString()));
 
             // ── Player ───────────────────────────────────────────────────────
             var save = GameStateManager.Instance?.SaveData;
@@ -172,7 +185,7 @@ namespace NGames.UI
                 sb.AppendLine();
                 sb.AppendLine(Section("COMPLETED EPISODES"));
                 foreach (var ep in save.CompletedEpisodes)
-                    sb.AppendLine(BulletRow(ep));
+                    sb.AppendLine($"  <color=#aaaacc>•</color> <color=#ffffff>{ep}</color>");
             }
 
             // ── Flags ─────────────────────────────────────────────────────────
@@ -181,7 +194,9 @@ namespace NGames.UI
                 sb.AppendLine();
                 sb.AppendLine(Section("FLAGS"));
                 foreach (var kv in save.Flags)
-                    sb.AppendLine(Row(kv.Key, kv.Value ? "<color=#88ff88>true</color>" : "<color=#ff8888>false</color>"));
+                    sb.AppendLine(Row(kv.Key,
+                        kv.Value ? "<color=#88ff88>true</color>"
+                                 : "<color=#ff8888>false</color>"));
             }
 
             // ── Counters ──────────────────────────────────────────────────────
@@ -213,23 +228,16 @@ namespace NGames.UI
             }
 
             _content.text = sb.ToString();
+
+            // Force layout so ContentSizeFitter resizes the content rect immediately
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRt);
         }
 
-        // ── Formatting helpers ─────────────────────────────────────────────────
-        private static string Section(string title) =>
-            $"<color=#bb99ff><b>── {title} ──</b></color>";
+        private static string Section(string t) =>
+            $"<color=#cc99ff><b>── {t} ──</b></color>";
 
         private static string Row(string key, string value) =>
-            $"  <color=#aaaacc>{key}:</color> <color=#ffffff>{value}</color>";
-
-        private static string BulletRow(string value) =>
-            $"  <color=#aaaacc>•</color> <color=#ffffff>{value}</color>";
-
-        private static RectTransform MakeRect(string n, Transform parent)
-        {
-            var go = new GameObject(n);
-            go.transform.SetParent(parent, false);
-            return go.AddComponent<RectTransform>();
-        }
+            $"  <color=#9999bb>{key}:</color> {value}";
     }
 }
