@@ -72,16 +72,7 @@ namespace NGames.UI
             _panelCg = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
 
             if (_dialogueText != null)
-            {
                 _dialogueRt = _dialogueText.GetComponent<RectTransform>();
-                // Soft drop-shadow so text is legible over any background
-                _dialogueText.fontSharedMaterial = new Material(_dialogueText.fontSharedMaterial);
-                _dialogueText.fontSharedMaterial.EnableKeyword("UNDERLAY_ON");
-                _dialogueText.fontSharedMaterial.SetColor("_UnderlayColor", new Color(0f, 0f, 0f, 0.8f));
-                _dialogueText.fontSharedMaterial.SetFloat("_UnderlayOffsetX",  1.0f);
-                _dialogueText.fontSharedMaterial.SetFloat("_UnderlayOffsetY", -1.0f);
-                _dialogueText.fontSharedMaterial.SetFloat("_UnderlaySoftness",  0.3f);
-            }
 
             BuildCharacterImage();
         }
@@ -92,11 +83,10 @@ namespace NGames.UI
             go.transform.SetParent(transform, false);
             go.transform.SetAsFirstSibling();
 
-            _characterImage                = go.AddComponent<Image>();
+            _characterImage              = go.AddComponent<Image>();
             _characterImage.preserveAspect = true;
             _characterImage.raycastTarget  = false;
             _characterImage.color          = Color.white;
-            _characterImage.type           = Image.Type.Simple;
 
             var rt = go.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0f,    0f);
