@@ -172,6 +172,9 @@ namespace NGames.UI
         {
             HideChoices();
 
+            // Activate container first so Awake() fires on instantiated children
+            _choicesContainer.gameObject.SetActive(true);
+
             for (int i = 0; i < choices.Count; i++)
             {
                 var btn = Instantiate(_choiceButtonPrefab, _choicesContainer);
@@ -179,8 +182,6 @@ namespace NGames.UI
                 btn.AnimateIn(i);
                 _choiceButtons.Add(btn);
             }
-
-            _choicesContainer.gameObject.SetActive(true);
         }
 
         public void HideChoices()
