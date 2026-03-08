@@ -67,19 +67,12 @@ VAR gaochang_scene   = false
 <i>A consent-first romantasy RPG set along the Silk Road.</i>
 
 In the real world, you are Ishani — a 30-year-old executive who traded the marriage timeline and the family expectations for a corner office and two rescue pitbulls named Potato and Sammy. You have no regrets. Most days.
-
 In <i>Vanquish Death</i>, the co-op RPG you launched two weeks ago, your handle is FortuneBringsProsperity. FBP. Fortune, to the people who've earned the shortcut.
-
 You're playing tonight because a deadline ate your weekend and you need something that doesn't answer back.
-
 The game has other plans. It always does.
-
 Rhea Port, where three rivers meet the sea and argue about who arrived first. The western gate of the Silk Road. It smells of salt, cardamom, and the kind of history that accumulates when every civilization on earth has needed something from the same harbor.
-
 You arrived following a quest thread: local merchants reporting ships returning empty. Not raided. Not lost. Empty. Cargo intact, crew silent, holds smelling of something below the waterline that nobody wants to describe twice.
-
 Your party is already waiting. They have been waiting since yesterday.
-
 There are two layers to this story. The Game Layer — what happens inside Ninkasa, where immortals fight and Guardians are freed. The IRL Layer — the people behind the characters, whose real lives bleed through. The game will not tell you which is which.
 
 * [Begin.] -> avatar_name_select
@@ -87,10 +80,7 @@ There are two layers to this story. The Game Layer — what happens inside Ninka
 === avatar_name_select ===
 # scene: character_select
 What should they call you?
-
 Your handle is FortuneBringsProsperity. The party will shorten this immediately.
-
-(Your name is Fortune by default. A writer or DM running this live may supply a different name via the get_player_name() function.)
 
 * [Fortune.] -> mo_stor_descent
 * [A different name.] -> mo_stor_descent
@@ -99,7 +89,6 @@ Your handle is FortuneBringsProsperity. The party will shorten this immediately.
 # scene: mo_stor_exterior
 # music: white_night_fade
 The bar is called Mo Stór. The sign above the door is in a language nobody has spoken aloud in four centuries, but the meaning translates without effort: <i>My Treasure</i>. The kind of name a place gets when it has saved enough people from themselves.
-
 You descend the steps. The door is heavy. The warmth hits you before the sound does.
 
 -> mo_stor_first_impression
@@ -108,7 +97,6 @@ You descend the steps. The door is heavy. The warmth hits you before the sound d
 # scene: mo_stor_interior
 # speaker: Tiberius
 "You're late. They've been here since last night."
-
 He sets a drink in front of you without asking what you want. It is exactly what you would have ordered.
 
 * ["Who are 'they'?"] -> mo_stor_which
@@ -120,7 +108,6 @@ The bar is ship-timber and candlelight. Privacy alcoves line the back wall. A qu
 
 # speaker: Tiberius
 "Most people don't notice the stool."
-
 He doesn't explain further. He pours you a second drink. This one is better than the first.
 
 -> mo_stor_which
@@ -134,9 +121,7 @@ You find them in the largest alcove. Three people who should not exist in the sa
 # scene: mo_stor_alcove
 # speaker: Fang
 The woman on the left has two long blades crossed on the table in front of her like a dare. She is examining her fingernails with the focus of someone who does this when she is actively not looking at something she finds interesting. She is looking at you.
-
 "You walk like you've been carrying something heavy. Not a weapon. Something else."
-
 She doesn't press. She just noticed. Out loud.
 
 -> mo_stor_meet_marcus
@@ -144,9 +129,7 @@ She doesn't press. She just noticed. Out loud.
 === mo_stor_meet_marcus ===
 # speaker: Marcus
 The large man in the center has his nose almost touching the surface of the table, reading the grain of the wood the way most people read a map. He lifts his head when you sit. His eyes are old. Not tired. Old, in the way that mountains are old.
-
 "You arrived from the east gate. You paused at the harbor before you came in. Something you saw there concerned you."
-
 It was not a question.
 
 -> mo_stor_meet_lawrence
@@ -154,9 +137,7 @@ It was not a question.
 === mo_stor_meet_lawrence ===
 # speaker: Lawrence
 The man at the far end of the booth is still. Not resting. Still, the way a very old predator is still: saving motion for when it matters. He does not look up when you sit. He looks up when he has decided to look up, which happens to be exactly when you have stopped expecting it.
-
 "You're smaller than I expected. That's not an insult. Small is harder to read."
-
 He looks back at whatever he was considering before you arrived. You have been assessed and filed.
 
 -> mo_stor_lawrence_briefing

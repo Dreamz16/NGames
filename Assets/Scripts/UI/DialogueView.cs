@@ -71,7 +71,8 @@ namespace NGames.UI
                 if (t != null) _advanceIndicator = t.gameObject;
             }
 
-            _panelCg = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
+            var existingCg = GetComponent<CanvasGroup>();
+            _panelCg = (existingCg != null) ? existingCg : gameObject.AddComponent<CanvasGroup>();
 
             if (_dialogueText != null)
                 _dialogueRt = _dialogueText.GetComponent<RectTransform>();
