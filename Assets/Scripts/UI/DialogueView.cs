@@ -33,8 +33,10 @@ namespace NGames.UI
         private readonly List<ChoiceButtonView> _choiceButtons = new();
 
         // Character portrait — created at runtime
-        private Image         _characterImage;
-        private RectTransform _dialogueRt;
+        private Image           _characterImage;
+        private Image           _placeholderBg;
+        private TextMeshProUGUI _placeholderInitial;
+        private RectTransform   _dialogueRt;
         private CanvasGroup   _panelCg;
         private Coroutine     _textAnimRoutine;
 
@@ -79,21 +81,52 @@ namespace NGames.UI
 
         private void BuildCharacterImage()
         {
-            var go = new GameObject("CharacterPortrait");
-            go.transform.SetParent(transform, false);
-            go.transform.SetAsFirstSibling();
+            // Shared anchor rect
+            var slot = new GameObject("CharacterSlot");
+            slot.transform.SetParent(transform, false);
+            slot.transform.SetAsFirstSibling();
+            var slotRt = slot.AddComponent<RectTransform>();
+            slotRt.anchorMin = new Vector2(0f,    0f);
+            slotRt.anchorMax = new Vector2(0.25f, 1f);
+            slotRt.offsetMin = slotRt.offsetMax = Vector2.zero;
+            slot.SetActive(false);
 
-            _characterImage              = go.AddComponent<Image>();
+            // Real portrait image
+            var imgGo = new GameObject("Portrait");
+            imgGo.transform.SetParent(slot.transform, false);
+            _characterImage                = imgGo.AddComponent<Image>();
             _characterImage.preserveAspect = true;
             _characterImage.raycastTarget  = false;
             _characterImage.color          = Color.white;
+            _characterImage.type           = Image.Type.Simple;
+            var imgRt = imgGo.GetComponent<RectTransform>();
+            imgRt.anchorMin = Vector2.zero;
+            imgRt.anchorMax = Vector2.one;
+            imgRt.offsetMin = imgRt.offsetMax = Vector2.zero;
 
-            var rt = go.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0f,    0f);
-            rt.anchorMax = new Vector2(0.25f, 1f);
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            // Placeholder — dark tinted background + initial letter
+            var phGo = new GameObject("Placeholder");
+            phGo.transform.SetParent(slot.transform, false);
+            _placeholderBg              = phGo.AddComponent<Image>();
+            _placeholderBg.raycastTarget = false;
+            var phRt = phGo.GetComponent<RectTransform>();
+            phRt.anchorMin = Vector2.zero;
+            phRt.anchorMax = Vector2.one;
+            phRt.offsetMin = phRt.offsetMax = Vector2.zero;
 
-            go.SetActive(false);
+            var initGo  = new GameObject("Initial");
+            initGo.transform.SetParent(phGo.transform, false);
+            _placeholderInitial                = initGo.AddComponent<TextMeshProUGUI>();
+            _placeholderInitial.alignment      = TextAlignmentOptions.Center;
+            _placeholderInitial.fontStyle      = FontStyles.Bold;
+            _placeholderInitial.enableAutoSizing = true;
+            _placeholderInitial.fontSizeMin    = 24;
+            _placeholderInitial.fontSizeMax    = 120;
+            _placeholderInitial.raycastTarget  = false;
+            var initRt = initGo.GetComponent<RectTransform>();
+            initRt.anchorMin = new Vector2(0.1f, 0.2f);
+            initRt.anchorMax = new Vector2(0.9f, 0.8f);
+            initRt.offsetMin = initRt.offsetMax = Vector2.zero;
         }
 
         private TextMeshProUGUI FindTMP(string childName)
@@ -103,16 +136,51 @@ namespace NGames.UI
         }
 
         // ── Character portrait ─────────────────────────────────────────────────
+        private Transform CharacterSlot => _characterImage?.transform.parent;
+
+        /// <summary>Show a real sprite portrait.</summary>
         public void SetCharacterSprite(Sprite sprite)
         {
             if (_characterImage == null) return;
             _characterImage.sprite = sprite;
+            _characterImage.gameObject.SetActive(true);
+            if (_placeholderBg != null) _placeholderBg.gameObject.SetActive(false);
+            ShowSlot(true);
         }
 
+        /// <summary>Show a coloured placeholder with the character's initial letter.</summary>
+        public void ShowCharacterPlaceholder(string name, Color accentColor)
+        {
+            if (_placeholderBg == null) return;
+            _characterImage.gameObject.SetActive(false);
+
+            _placeholderBg.color = new Color(
+                accentColor.r * 0.18f, accentColor.g * 0.18f, accentColor.b * 0.18f, 0.95f);
+            _placeholderBg.gameObject.SetActive(true);
+
+            if (_placeholderInitial != null)
+            {
+                _placeholderInitial.text  = string.IsNullOrEmpty(name) ? "?" : name[..1].ToUpper();
+                _placeholderInitial.color = new Color(accentColor.r, accentColor.g, accentColor.b, 0.85f);
+            }
+            ShowSlot(true);
+        }
+
+        /// <summary>Hide the entire character slot (portrait + placeholder).</summary>
         public void ShowCharacterImage(bool show)
         {
-            if (_characterImage == null) return;
-            _characterImage.gameObject.SetActive(show);
+            ShowSlot(show);
+            if (!show)
+            {
+                if (_characterImage  != null) _characterImage.gameObject.SetActive(false);
+                if (_placeholderBg   != null) _placeholderBg.gameObject.SetActive(false);
+            }
+        }
+
+        private void ShowSlot(bool show)
+        {
+            var slot = CharacterSlot;
+            if (slot != null) slot.gameObject.SetActive(show);
             if (_dialogueRt == null) return;
             _dialogueRt.anchorMin = show ? TextAnchorMinWithChar : TextAnchorMinFull;
             _dialogueRt.anchorMax = show ? TextAnchorMaxWithChar : TextAnchorMaxFull;
