@@ -135,6 +135,16 @@ namespace NGames.Core.Narrative
         public object GetVariable(string name)          => _story?.variablesState[name];
         public void   SetVariable(string name, object v) { if (_story != null) _story.variablesState[name] = v; }
 
+        /// <summary>Returns a snapshot of all live Ink story variables.</summary>
+        public Dictionary<string, object> GetAllInkVariables()
+        {
+            var result = new Dictionary<string, object>();
+            if (_story == null) return result;
+            foreach (string name in _story.variablesState)
+                result[name] = _story.variablesState[name];
+            return result;
+        }
+
         // ── Save / Load ────────────────────────────────────────────────────────
         public string GetStoryStateJson() => _story?.state.ToJson();
 
