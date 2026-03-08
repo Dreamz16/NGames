@@ -1,23 +1,32 @@
 using System.Collections;
 using NGames.Core.Events;
-using NGames.Settings;
 using NGames.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace NGames.Core.Narrative
 {
+    /// <summary>
+    /// Drives dialogue flow with zero-click reading:
+    ///   - Text appears instantly.
+    ///   - Lines auto-advance after a reading-time delay (proportional to word count).
+    ///   - A tap/click skips the delay and advances immediately.
+    ///   - Choices always wait for a deliberate selection — no accidental advances.
+    /// </summary>
     [RequireComponent(typeof(DialogueView))]
     public class DialogueController : MonoBehaviour
     {
-        [SerializeField] private NarrativeConfig _config;
-        [SerializeField] private DialogueView    _view;
+        [SerializeField] private DialogueView _view;
 
-        private bool      _isTyping;
-        private Coroutine _typewriterCoroutine;
-        private Coroutine _pulseCoroutine;
-        private string    _currentFullText;
+        // Tuning
+        private const float WordsPerSecond  = 3.0f;   // reading speed
+        private const float MinDelay        = 1.8f;   // shortest pause (very short lines)
+        private const float MaxDelay        = 6.0f;   // longest pause (very long lines)
+
         private bool      _awaitingChoice;
+        private bool      _autoAdvancing;
+        private Coroutine _autoAdvanceCo;
+        private Coroutine _pulseCoroutine;
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
         private void Awake()
@@ -41,56 +50,44 @@ namespace NGames.Core.Narrative
             GameEventBus.Unsubscribe<SpeakerChangedEvent>(OnSpeakerChanged);
         }
 
-        // ── Input ──────────────────────────────────────────────────────────────
+        // ── Input — tap skips the delay ────────────────────────────────────────
         private void Update()
         {
-            if (_awaitingChoice) return;
+            if (_awaitingChoice || !_autoAdvancing) return;
 
-            bool advance =
-                (Keyboard.current != null && (
+            bool tapped =
+                (Keyboard.current    != null && (
                     Keyboard.current.spaceKey.wasPressedThisFrame ||
-                    Keyboard.current.enterKey.wasPressedThisFrame ||
-                    Keyboard.current.xKey.wasPressedThisFrame)) ||
-                (Mouse.current   != null && Mouse.current.leftButton.wasPressedThisFrame) ||
+                    Keyboard.current.enterKey.wasPressedThisFrame)) ||
+                (Mouse.current       != null && Mouse.current.leftButton.wasPressedThisFrame) ||
                 (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
 
-            if (!advance) return;
-
-            if (_isTyping)
-                SkipTypewriter();
-            else if (NarrativeManager.Instance != null && NarrativeManager.Instance.CanContinue)
-                NarrativeManager.Instance.ContinueStory();
+            if (tapped) SkipDelay();
         }
 
         // ── Event Handlers ─────────────────────────────────────────────────────
         private void OnLineRead(StoryLineReadEvent ev)
         {
-            _awaitingChoice  = false;
-            _currentFullText = ev.Text;
+            _awaitingChoice = false;
+            StopAutoAdvance();
+
             _view.HideChoices();
+            _view.SetDialogueText(ev.Text);
+            _view.ShowAllCharacters();
+            _view.AnimateLineIn();
             SetAdvance(false);
 
-            if (_config?.TypewriterEnabled == true)
-                StartTypewriter(ev.Text);
-            else
+            if (NarrativeManager.Instance?.CanContinue == true)
             {
-                _view.SetDialogueText(ev.Text);
-                _view.ShowAllCharacters();
-                SetAdvance(NarrativeManager.Instance?.CanContinue == true);
+                float delay = ReadingDelay(ev.Text);
+                _autoAdvanceCo = StartCoroutine(AutoAdvanceRoutine(delay));
             }
-
-            _view.AnimateLineIn();
-
-            if (_config?.AutoAdvanceEnabled == true && !_awaitingChoice)
-                StartCoroutine(AutoAdvance());
         }
 
         private void OnChoicesPresented(ChoicePresentedEvent ev)
         {
             _awaitingChoice = true;
-            StopTypewriterIfRunning();
-            _view.ShowAllCharacters();
-            _view.SetDialogueText(_currentFullText);
+            StopAutoAdvance();
             SetAdvance(false);
             _view.ShowChoices(ev.Choices, OnChoiceSelected);
         }
@@ -102,9 +99,10 @@ namespace NGames.Core.Narrative
             NarrativeManager.Instance?.MakeChoice(index);
         }
 
-        private void OnStoryEnded(StoryEndedEvent ev)
+        private void OnStoryEnded(StoryEndedEvent _)
         {
             _awaitingChoice = false;
+            StopAutoAdvance();
             SetAdvance(false);
             _view.ShowEndPanel();
         }
@@ -116,60 +114,44 @@ namespace NGames.Core.Narrative
                 _view.SetPortrait(ev.PortraitKey);
         }
 
-        // ── Typewriter (TMP-native: maxVisibleCharacters) ──────────────────────
-        private void StartTypewriter(string text)
+        // ── Auto-advance ───────────────────────────────────────────────────────
+        private IEnumerator AutoAdvanceRoutine(float delay)
         {
-            StopTypewriterIfRunning();
-            _typewriterCoroutine = StartCoroutine(TypewriterRoutine(text));
-        }
+            _autoAdvancing = true;
 
-        private IEnumerator TypewriterRoutine(string text)
-        {
-            _isTyping = true;
-            _view.SetDialogueText(text);   // set full text with markup intact
-            _view.SetMaxVisibleCharacters(0);
-
-            // Wait one frame for TMP to parse the text and populate characterCount
-            yield return null;
-
-            int total = _view.GetVisibleCharacterCount();
-            float charDelay  = _config?.TypewriterCharDelay  ?? 0.03f;
-            float pauseDelay = _config?.SentencePauseDelay   ?? 0.15f;
-
-            for (int i = 1; i <= total; i++)
+            float elapsed = 0f;
+            while (elapsed < delay)
             {
-                _view.SetMaxVisibleCharacters(i);
-
-                // Sentence pause: check the character we just revealed
-                char revealed = _view.GetCharAt(i - 1);
-                float delay = (revealed == '.' || revealed == '!' || revealed == '?')
-                    ? charDelay + pauseDelay
-                    : charDelay;
-
-                yield return new WaitForSeconds(delay);
+                elapsed += Time.deltaTime;
+                yield return null;
             }
 
-            _view.ShowAllCharacters();
-            _isTyping = false;
-            SetAdvance(NarrativeManager.Instance?.CanContinue == true);
+            _autoAdvancing = false;
+            if (!_awaitingChoice && NarrativeManager.Instance?.CanContinue == true)
+                NarrativeManager.Instance.ContinueStory();
         }
 
-        private void SkipTypewriter()
+        private void SkipDelay()
         {
-            StopTypewriterIfRunning();
-            _isTyping = false;
-            _view.ShowAllCharacters();
-            SetAdvance(NarrativeManager.Instance?.CanContinue == true);
+            StopAutoAdvance();
+            if (!_awaitingChoice && NarrativeManager.Instance?.CanContinue == true)
+                NarrativeManager.Instance.ContinueStory();
         }
 
-        private void StopTypewriterIfRunning()
+        private void StopAutoAdvance()
         {
-            if (_typewriterCoroutine != null)
-            {
-                StopCoroutine(_typewriterCoroutine);
-                _typewriterCoroutine = null;
-            }
-            _isTyping = false;
+            if (_autoAdvanceCo != null) { StopCoroutine(_autoAdvanceCo); _autoAdvanceCo = null; }
+            _autoAdvancing = false;
+        }
+
+        // ── Helpers ────────────────────────────────────────────────────────────
+        private static float ReadingDelay(string text)
+        {
+            int words = System.Text.RegularExpressions.Regex.Replace(
+                text ?? "", "<.*?>", "").Trim().Split(
+                    new[] { ' ', '\t', '\n' },
+                    System.StringSplitOptions.RemoveEmptyEntries).Length;
+            return Mathf.Clamp(words / WordsPerSecond, MinDelay, MaxDelay);
         }
 
         // ── Advance indicator ──────────────────────────────────────────────────
@@ -189,13 +171,6 @@ namespace NGames.Core.Narrative
                 e = 0;
                 while (e < 0.4f) { e += Time.deltaTime; _view.SetAdvanceAlpha(Mathf.Lerp(1f, 0.3f, e / 0.4f)); yield return null; }
             }
-        }
-
-        private IEnumerator AutoAdvance()
-        {
-            yield return new WaitForSeconds(_config?.AutoAdvanceDelay ?? 3f);
-            if (!_awaitingChoice && !_isTyping && NarrativeManager.Instance?.CanContinue == true)
-                NarrativeManager.Instance.ContinueStory();
         }
     }
 }
