@@ -184,27 +184,25 @@ function processBody(bodyLines) {
         }
 
         // ── <<if $cond>> ──
+        // Always use multi-branch form  { \n - cond: \n }  so <<elseif>> works
         const ifM = t.match(/^<<if\s+(.*?)>>\s*$/);
         if (ifM) {
-            out.push(`${ind()}{${convertCondition(ifM[1])}:`);
+            out.push(`${ind()}{`);
             ifDepth++;
+            out.push(`${ind()}- ${convertCondition(ifM[1])}:`);
             continue;
         }
 
         // ── <<elseif $cond>> ──
         const elseifM = t.match(/^<<elseif\s+(.*?)>>\s*$/);
         if (elseifM) {
-            ifDepth--;
             out.push(`${ind()}- ${convertCondition(elseifM[1])}:`);
-            ifDepth++;
             continue;
         }
 
         // ── <<else>> ──
         if (/^<<else>>\s*$/.test(t)) {
-            ifDepth--;
             out.push(`${ind()}- else:`);
-            ifDepth++;
             continue;
         }
 
@@ -326,10 +324,9 @@ function removeEmptyConditionals(ink) {
     let prev;
     do {
         prev = ink;
-        // { cond: (optional whitespace/empty lines) } with nothing between
-        ink = ink.replace(/\{[^{}]+:\s*\n(\s*\n)*\s*\}/g, '');
-        // { cond: (empty) - else: (empty) }
-        ink = ink.replace(/\{[^{}]+:\s*\n(\s*\n)*\s*-[^\n]+:\s*\n(\s*\n)*\s*\}/g, '');
+        // Multi-branch form:  {\n(whitespace/- branch: \n)*\n}  with no real content
+        // Matches a { that contains only branch headers and blank lines
+        ink = ink.replace(/\{\n(\s*-[^\n]+:\s*\n(\s*\n)*)+\s*\}/g, '');
         // collapse 3+ consecutive blank lines to 2
         ink = ink.replace(/\n{3,}/g, '\n\n');
     } while (ink !== prev);

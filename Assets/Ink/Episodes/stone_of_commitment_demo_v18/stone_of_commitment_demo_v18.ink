@@ -252,11 +252,12 @@ The muttering one still hasn't moved. He is waist-deep in the water now without 
 ~ flow = flow + 1
 ~ xp = xp + 15
 // 📍 Rhea Port · Furthest Dock · Turn 3
-{dockArmCost:
+{
+    - dockArmCost:
     You get hold of him. Your sword arm screams the moment you put your weight into the grip. He is heavier than his frame suggests, weighted by whatever has been moving him, and your forearm is already compromised. It takes longer than it should. You hold on anyway. Your arm is shaking when it is over. You take a breath before you turn around.
 
     The tally-marks fade when he stops moving toward the water's edge.
-- else:
+    - else:
     You get hold of him before he goes further. It takes more than it should. He is heavier than his frame suggests, weighted by whatever has been moving him.
 }
 
@@ -329,17 +330,18 @@ You stand on the dock and breathe for a moment. The crates are still there. The 
 
 Lawrence is exactly where he was. He has not moved once. He looks at you the way a man looks at something that does not fit the shape of the shelf he had ready for it.
 
-{artificerUsed:
+{
+    - artificerUsed:
     # speaker: Fang
     "(not a question) What was that thing?"
     She is watching you the way someone watches a hand of cards that just came out different than the deck suggested.
 
-- tkAct0:
+    - tkAct0:
     # speaker: Fang
     "(carefully, not her usual register) That hook moved."
     Not a question. Not an accusation. The particular stillness of someone who catalogues things and has just encountered one she cannot place.
 
-- else:
+    - else:
     # speaker: Fang
     "(not a question) You handled the marked one differently."
     She is watching you the way someone watches a hand of cards that just came out different than the deck suggested.
@@ -384,7 +386,8 @@ Fang watches her do it. Just watches.
 Then she sees you, and the grin comes back.
 The party moves along the dock’s edge. Lawrence falls into step beside you without announcing it. He does not touch you.
 
-{artificerUsed:
+{
+    - artificerUsed:
     # speaker: Lawrence
     "You adjusted for the third one. Most people wouldn’t have. They would have treated all three the same and missed what he was."
     A pause.
@@ -396,7 +399,7 @@ The party moves along the dock’s edge. Lawrence falls into step beside you wit
     # speaker: Lawrence
     "It was built for something specific. Not this. You repurposed it in the moment. That is a different skill than fighting. I find I don’t have a category for it."
     ~ artificerSeen = true
-- tkAct0:
+    - tkAct0:
     # speaker: Lawrence
     "You adjusted for the third one. Most people wouldn’t have. They would have treated all three the same and missed what he was."
     A pause. Longer than the other ones.
@@ -409,7 +412,7 @@ The party moves along the dock’s edge. Lawrence falls into step beside you wit
 
     # speaker: Lawrence
     "I don’t have a category for that either."
-- else:
+    - else:
     # speaker: Lawrence
     "You adjusted for the third one. Most people wouldn’t have. They would have treated all three the same and missed what he was."
     A pause.
@@ -1294,9 +1297,10 @@ Lawrence enters first. The way he enters dangerous places tells whatever is insi
 // 📍 The Sunken Tribunal · Post-Fracture
 You step back. Your body thanks you before your pride does.
 
-{artificerUsed && artificerItems <= 0:
+{
+    - artificerUsed && artificerItems <= 0:
     The spool is gone. The one thing you built for this situation has been used. The telekinesis you have been not-naming since the dock is running at a cost you don't have a number for yet. Both systems at their edge simultaneously. The No Recovery Fracture is not a failure: it is the correct read of the math.
-- tkLatent:
+    - tkLatent:
     Something has been pulling at your attention since the water released him at the dock. You have been filing it without opening the file. Whatever it is, it costs something, and the cost is present now, at the back of your skull, a pressure that says: not this fight, not like this.
 }
 
@@ -1637,7 +1641,8 @@ Yildiz's knife finds openings that the astrolabe never could. She catches Fang a
 
 # speaker: Fang
 "(bleeding, to you, very direct) This is the part where you decide."
-{noRecoveryUnlocked:
+{
+    - noRecoveryUnlocked:
     + [No Recovery Fracture: step back, let the party finish.] -> act3_norecovery
 }
 + [Push through to the binding.] -> act3_yildiz_break
@@ -1697,10 +1702,11 @@ The canteen on your belt cracks. You feel it before you see it: the strap snappi
 
 # speaker: Fang
 "(seeing the empty canteen, very quiet) ...No."
-{noRecoveryUnlocked:
+{
+    - noRecoveryUnlocked:
     + [Push through. Finish this yourself.] -> act4_push
     + [No Recovery Fracture: step back.] -> act4_norecovery
-- else:
+    - else:
     + [Push through.] -> act4_push
 }
 
@@ -1860,19 +1866,20 @@ The hum fades. The sand settles. The walls stop moving.
 
 You are on your knees. You don’t remember getting there.
 
-{fang >= lawrence && fang >= marcus:
+{
+    - fang >= lawrence && fang >= marcus:
     Fang crouches beside you. She does not ask if you are okay. She looks at the empty space where your canteen used to be, then at the shape of what you just did, and she says something quiet that is not comfort and not praise.
 
     # speaker: Fang
     "You knew what it would cost. You did it anyway. That’s not the same as not knowing."
     She stands up before you have to respond.
-- lawrence >= marcus:
+    - lawrence >= marcus:
     Lawrence is three feet away. Still standing, barely. He looks at you on your knees and he says nothing for a long moment. When he speaks, his voice is the combat voice, low and clean, and it is doing something it does not usually do: it is being honest about something it witnessed.
 
     # speaker: Lawrence
     "You checked the exits. Then you chose not to take them. I noted the difference."
     He offers you his hand. Not a gesture. A practical offer.
-- else:
+    - else:
     Marcus shifts to human form and sits beside you in the sand. He does not speak immediately. When he does, it is the voice he uses when he has been waiting to say something and has decided the moment is now.
 
     # speaker: Marcus
@@ -1916,11 +1923,12 @@ The question is strategic. He knows it will create intimacy because it frames th
 But his hand rises toward his sternum. Stops. Drops.
 The question is also real.
 
-{lawrence >= 5:
+{
+    - lawrence >= 5:
     + ['Yes. Every step.'] -> act4_question_yes
     + ['I don't know. But I'd do it again.'] -> act4_question_again
     + [(Step closer. Hold his gaze. Say nothing.)] -> act4_question_silent
-- else:
+    - else:
     + ['Yes. Every step.'] -> act4_question_yes
     + ['I don't know. But I'd do it again.'] -> act4_question_again
     + [(Hold his gaze. Say nothing.)] -> act4_question_silent
@@ -1974,7 +1982,8 @@ He does not deny it. He does not confirm it. He starts walking again. After thre
 
 You say nothing. You do the harder thing.
 
-{lawrence >= 5:
+{
+    - lawrence >= 5:
     You step closer. Not a full step. Six inches. The distance between standing near someone and standing with someone. You can feel the cold of him now. Not unpleasant. Specific. The particular temperature of a man who has not been warm in a thousand years and has stopped expecting warmth from anyone.
 
     You hold his gaze. His eyes are dark and very, very still. He is reading you the way he reads combat: every micro-expression, every shift in weight, every breath. He is calculating. He is always calculating. But the calculation is stuttering against something it cannot process, which is that you are not performing bravery. You are simply here, six inches closer than you were, and you are not leaving.
@@ -1989,7 +1998,7 @@ You say nothing. You do the harder thing.
     "(even quieter) I am not asking you to move."
     The desert wind moves your hair across your face. Lawrence’s arms are rigid at his sides, hands clenched. You both know he is not going to reach for it. He knows you know. The space between you is the same width it was a moment ago. It feels smaller.
 
-- else:
+    - else:
     You hold his gaze. The silence stretches. Lawrence looks at you with the full weight of a thousand years of managing how other people see him, and for once the management fails. His expression changes. Not much. The particular shift of someone who asked a strategic question and received a genuine answer and does not know what to do with the difference.
 
     # speaker: Lawrence
@@ -2138,7 +2147,8 @@ Lawrence is on your right. Half a step back. Close enough that the absence of th
 
 The silence where Heartbeat should be is more devastating than the music.
 
-{jiwonSeen:
+{
+    - jiwonSeen:
     Fang touches the chart inside her coat. Lawrence watches. Some things can only be carried together.
 }
 
@@ -2351,7 +2361,8 @@ Marcus, across the fire, has been watching the entire exchange. He says nothing.
 
 Your phone vibrates. Not a game notification. A DM.
 
-{jeff >= 6>><span style="color:#60a5fa;">Byung-Ho:</span> <span style="color:#d1d5db;">Hey. Good session tonight. Your character is really coming into her own. I mean that. She's ! just good at things. She's interesting.</span><<elseif jeff >= 3>><span style="color:#60a5fa;">Byung-Ho:</span> <span style="color:#d1d5db;">hey. good session tonight. your character is really coming into her own. I've been thinking about the pomegranate scene.</span><<else>><span style="color:#60a5fa;">Byung-Ho:</span> <span style="color:#d1d5db;">hey. good session tonight. your character is really coming into her own.</span><</if:
+{
+    - jeff >= 6>><span style="color:#60a5fa;">Byung-Ho:</span> <span style="color:#d1d5db;">Hey. Good session tonight. Your character is really coming into her own. I mean that. She's ! just good at things. She's interesting.</span><<elseif jeff >= 3>><span style="color:#60a5fa;">Byung-Ho:</span> <span style="color:#d1d5db;">hey. good session tonight. your character is really coming into her own. I've been thinking about the pomegranate scene.</span><<else>><span style="color:#60a5fa;">Byung-Ho:</span> <span style="color:#d1d5db;">hey. good session tonight. your character is really coming into her own.</span><</if:
     ~ jeff = jeff + 1
     Ishani:FBP: Thanks! The desert sequence was intense. I didn't expect the question scene.
     Byung-Ho: yeah Lawrence kind of went off script there. i had something more strategic planned but the scene just went somewhere and i followed it.
@@ -2901,10 +2912,12 @@ She is not asking why. She already knows why. She is naming it so you both know 
 "That is what I did. Every day for eight months. I came to this room knowing it would not fix anything. I came anyway."
 The weight in the room shifts. Not lifting. Redistributing. Like a structure that has found a counterbalance it did not know was available.
 
-{marcus >= 3 && batuMet:
+{
+    - marcus >= 3 && batuMet:
     + [Marcus: Recognition.] -> act7_kira_marcus
 }
-{fang >= 3 && tariqLedger:
+{
+    - fang >= 3 && tariqLedger:
     + [Fang: The Letter.] -> act7_kira_fang
 }
 + [You: Name the fear.] -> act7_kira_player
@@ -3118,18 +3131,20 @@ You know this. You understand this. Your body does not care. Your skin crawls. Y
 
 # speaker: Fang
 "(noticing immediately) Hey. You okay?"
-{lawrence >= 4:
+{
+    - lawrence >= 4:
     Lawrence is beside you before you answer. Not performing concern. Reading the specific frequency of someone whose fear is irrational and who knows it is irrational and who cannot make that knowledge matter. His hand finds the small of your back. Light. Grounding. Asking nothing.
 
     # speaker: Lawrence
     "(low, only for you) They are not interested in us. Focus on my voice. We walk through. Sixty paces."
     You walk through. His hand stays at your back the entire time. Sixty paces. You count every one. The spiders move around you without curiosity. They are busy. They have a cave to hold together.
-- else:
+    - else:
     {avatarName}: "I'm fine. Just... give me a second."
     You are not fine. But you walk. The spiders move around you without curiosity. They are busy. They have a cave to hold together.
 }
 
-{flow >= 3:
+{
+    - flow >= 3:
     ~ spiderWebReader = true
     Once through the worst of it, you notice: the webs form readable patterns. You can see the dungeon's structure in them. Shortcuts, weaknesses, Kira's location. The spiders have been mapping for you.
 
@@ -3287,7 +3302,8 @@ The fossil slides back into the wall. Piece by piece, the mineral structure reab
 
 Silence.
 
-{noRecoveryUnlocked:
+{
+    - noRecoveryUnlocked:
     + [No Recovery Fracture.] -> act7_norecovery6
 }
 + [The Foundation Chamber is below.] -> act7_postfossil
@@ -3457,9 +3473,10 @@ Marcus, after a long pause, to nobody:
 # speaker: Fang
 "(to you) See, that's funny. She's funny. I like her."
 No Recovery Fracture
-{noRecoveryUnlocked:
+{
+    - noRecoveryUnlocked:
     Mechanic active. You know your limits and they are not weaknesses. Carry this forward.
-- else:
+    - else:
     The Tribunal taught you this. Find it again.
 }
 
@@ -3705,7 +3722,8 @@ You descend the stone steps. The third step creaks. You knew it would creak befo
 
 You do not know when this stopped being a tavern and started being the place you come back to. But your shoulders dropped two inches on the third step, and that is its own kind of answer.
 
-{tiberius >= 3:
+{
+    - tiberius >= 3:
     Tiberius looks up before the door finishes opening. Your drink is already on the counter. Not where drinks go. Where your drink goes, in front of the stool at the far end of the bar. The empty stool. The one Tiberius told you about the first night, when he said "Most people don't notice the stool." It is pulled out. Waiting. Nobody has sat in it since you were last here. You know this the way you know the third step creaks.
 
     # speaker: Tiberius
@@ -3720,7 +3738,8 @@ You do not know when this stopped being a tavern and started being the place you
     He does not correct you. He polishes a glass that is already clean. Once. Brief. Then sets it down and leans on the bar the way bartenders lean when they are about to say something they have been thinking about for a while.
 }
 
-{tiberius < 3:
+{
+    - tiberius < 3:
     # speaker: Tiberius
     "Twice in one week. Something's either very right or very wrong."
     He pours your drink without asking what you want. He remembered.
@@ -3766,14 +3785,15 @@ The logistics settle. The posting is folded. The route is decided. The bar absor
 
 Fang waits until the conversation is done. Then she slides a drink across the bar to you. Not Tiberius's drink, which was waiting when you arrived. A second drink. One she ordered and paid for while you were reading the quest board.
 
-{noRecoveryUnlocked:
+{
+    - noRecoveryUnlocked:
     # speaker: Fang
     "You stepped back on that mountain and let us finish it. Do you know how rare that is? I have fought beside people for two hundred years who would rather bleed out than admit the team needed to carry them. You were done, you knew you were done, and you made the call with your eyes open. Against a woman who was faster than Lawrence."
     She taps the glass once.
 
     # speaker: Fang
     "That's not quitting. That's the hardest thing I've seen anyone do in a fight. Drink."
-- else:
+    - else:
     # speaker: Fang
     "You pushed through a woman with a knife who was faster than Lawrence. On a mountaintop. In wind that could knock a bear sideways. After surviving an underwater courtroom that tried to judge you for the crime of moving."
     She taps the glass once.
@@ -4461,7 +4481,8 @@ She bumps your shoulder with hers. Once. Brief. A language she trusts more than 
 + [Head to the caravanserai gate.] -> kai_marketplace
 
 === bridge_samarkand_repair_lawrence ===
-{lawrenceFracture:
+{
+    - lawrenceFracture:
     // 📍 Samarkand · The Repair
     He is at the wall again. Not the dock. There is no dock here. The gesture is the same: three feet from the edge, watching something that does not require watching.
 
@@ -4495,7 +4516,7 @@ She bumps your shoulder with hers. Once. Brief. A language she trusts more than 
     ~ lawrence = lawrence + 3
 
     + [The desert tomorrow.] -> bridge_samarkand_friction
-- else:
+    - else:
     ~ lawrence = lawrence + 1
     ~ partyFriction = false
     // 📍 Samarkand · Registan Square · Dusk
@@ -4514,7 +4535,8 @@ She bumps your shoulder with hers. Once. Brief. A language she trusts more than 
 
 === irl_chat_close ===
 ~ jeff = jeff + 1
-{jeff >= 9:
+{
+    - jeff >= 9:
     Byung-Ho: see you next session.
     Byung-Ho: I mean that literally. Not as a figure of speech.
     Byung-Ho: {irlPlayer}. FBP. I hope that's okay to say.
@@ -4522,11 +4544,11 @@ She bumps your shoulder with hers. Once. Brief. A language she trusts more than 
 
     You are aware that you are smiling. You are aware that you are aware of it. You are aware that none of this is about Lawrence.
 
-- jeff >= 6:
+    - jeff >= 6:
     Byung-Ho: see you next session. Rain here tonight. Weird that I noticed.
     He texted something that was not about the game. A small true thing from a real place. You read it the way you read things that land differently than expected: once, then again, then you set the phone down and do not pick it up for a while.
 
-- else:
+    - else:
     Byung-Ho: see you next session.
 }
 The conversation ends the way good first conversations end: before anyone runs out of things to say.
@@ -4726,9 +4748,10 @@ Your thumbs hover. The cursor blinks. You are aware, suddenly, that you do not k
 // ═══ JOURNALWhat You Carry With You ═══
 Every choice, every silence, every moment the world shifted. This is your record. It cannot be undone, only understood.
 
-{journal.length === 0:
+{
+    - journal.length === 0:
     No entries yet. Your story is waiting to begin.
-- else:
+    - else:
     /* TODO: <<for _i, _entry range $journal>> */
     _entry.title
     _entry.body
@@ -4957,7 +4980,8 @@ Before you leave, Tiberius produces a small stone token from behind the counter 
 
 # speaker: Tiberius
 "If you need to come back, hold this and mean it. ... It only works if you mean it. I've had adventurers try to use it because they wanted a cheaper inn. It knew."
-{drinkFinished:
+{
+    - drinkFinished:
     Tiberius notices you finished your drink. He files this.
 }
 You pull the pouch that's hanging around your neck out from under your tunic and slip the token inside. Then you tuck the pouch back out of sight.
@@ -5139,10 +5163,11 @@ Kai is non-immortal but not weak. Two hundred years of raw predatory instinct wi
 
 Lawrence’s combat voice drops lower than usual. Clipped even beyond his standard register. Marcus’s ears tilt once and do not tilt back.
 
-{noRecoveryUnlocked:
+{
+    - noRecoveryUnlocked:
     + [Fight. Push through.] -> kai_combat_pushthrough
     + [No Recovery Fracture: step back.] -> kai_combat_norecovery
-- else:
+    - else:
     + [Fight. The party handles it.] -> kai_combat_pushthrough
 }
 
@@ -5222,10 +5247,12 @@ A pause. Lawrence, from the back of the group: "Then they have been waiting for 
 
 The soldiers at the gate have seen you. They are moving into position. Not attacking. Checking. Their protocol is beginning.
 
-{marcus >= 3:
+{
+    - marcus >= 3:
     + [Marcus: Name the flaw in their orders.] -> act8_zhangye_negotiate
 }
-{fang >= 4:
+{
+    - fang >= 4:
     + [Fang: The bypass.] -> act8_zhangye_reroute
 }
 + [Fight through.] -> act8_zhangye_combat
@@ -5303,7 +5330,8 @@ This is the mandatory rest before the fort. No combat. The party camps at the ba
 
 Fang at the cliff face, cleaning the Samarkand blade. The hilt cloth is loose. The letter is visible. The hilt cloth with Jiwon's letter wrapped inside it, where it has been since Samarkand.
 
-{fang >= 7:
+{
+    - fang >= 7:
     + [(Fang Bond 7+) Say something.] -> act8_rainbowmountains_fangbeat
 }
 + [Let the rest continue in silence.] -> act8_lastcaravanserai
@@ -5428,7 +5456,8 @@ The garrison soldiers are here. Fewer than the fort was designed to hold -- perh
 They are not Death's agents. They were posted here, the disruption happened, and they could not leave because their orders had not been rescinded.
 
 They see the party. They move into position. The protocol begins.
-{marcus >= 3:
+{
+    - marcus >= 3:
     + [Follow their protocol exactly.] -> act8_level2_nonlethal
 }
 + [Fight through. Non-lethal.] -> act8_level2_nonlethal
@@ -5595,7 +5624,8 @@ Seo Yun-ji
 She gestures at the desert around her. This is where she has been. Watching from the place furthest from the damage she caused.
 
 + [The signal flags: what she wrote herself.] -> act8_strike1
-{marcus >= 3:
+{
+    - marcus >= 3:
     + [Marcus: the archive records.] -> act8_strike2
 }
 + [The argument she cannot answer.] -> act8_strike3
@@ -5648,7 +5678,8 @@ The light does not change. But she takes one step back from where she has been s
 // 📍 The Desert -- The Argument She Cannot Answer
 Strike Three: Authority
 
-{lawrence >= 5:
+{
+    - lawrence >= 5:
     Lawrence steps forward. This is the version of Lawrence that was visible in the Inner Ward: not performing, not managing, just present.
 
     # speaker: Lawrence
@@ -5657,7 +5688,7 @@ Strike Three: Authority
     "Because?"
     # speaker: Lawrence
     "Because the light is not yours to withhold. You did not create it. You could not control it. You cannot be responsible for its existence by choosing to be responsible for its absence. Those are not the same authority."
-- else:
+    - else:
     {avatarName}: "You are standing in the light you could not control as punishment for not controlling it."
     # speaker: Seoyunji
     "Yes."
@@ -5856,10 +5887,11 @@ He leans in. His lips brush the side of your neck.
 
 The warmth peaks. The city disappears. There is only this alley, this warmth, this specific feeling of being inside a moment that was made for you by something that knows exactly what you need.
 
-{dex >= 3 || lawrence >= 4:
+{
+    - dex >= 3 || lawrence >= 4:
     ~ kaiEnspellAwareness = true
     Something else is also present, at a frequency underneath the warmth. Small. Insistent. It is the part of you that has spent eight acts learning how mechanisms work. It knows what this is. The warmth is not yours. The warmth was built to fit you, and built things that fit perfectly are worth examining. You are aware. You cannot break it alone. But you are aware.
-- else:
+    - else:
     ~ kaiEnspellAwareness = false
 }
 
@@ -5875,7 +5907,8 @@ Kai's hands drop. Not quickly. He steps back from you with the specific unhurrie
 
 The warmth in your chest does not dissipate fully. It recedes. It does not leave. This is the part that matters: it recedes but it does not leave.
 
-{kaiEnspellAwareness:
+{
+    - kaiEnspellAwareness:
     The frequency underneath the warmth is still present too. The part that was watching the mechanism even while the mechanism ran. That part is fully intact. You were in there the whole time.
 }
 
@@ -6103,7 +6136,8 @@ He does not answer immediately. The junk runs fast over the compression line. Th
 "A great many things happened in 1389. I was there for some of them."
 That is all he says. The horizon does not change. He is facing the direction Moon is in, and he has not said Moon's name since the cave, and his hand is at the rail and not at his sternum, and the not-saying is the saying.
 
-{lawrence >= 6:
+{
+    - lawrence >= 6:
     + ["You stopped after Moon."] -> act8_crossing_lawrencebeat
 }
 + [Stay at the rail with him.] -> act8_crossing_quiet
@@ -6473,7 +6507,8 @@ The ceremony does not demand these be surrendered. It demands only that they be 
 
 + [Hold still. Receive it.] -> act9_geori_8_accept
 + [Press through. Section nine is ahead.] -> act9_geori_8_fight
-{end <= -1:
+{
+    - end <= -1:
     + [No Recovery: step back. The ceremony will wait.] -> act9_norecovery_early
 }
 
@@ -6610,7 +6645,8 @@ Ihwa stands at the center. She has turned fully to face the party. She is lookin
 
 She does not speak.
 
-{lawrence >= 7:
+{
+    - lawrence >= 7:
     Lawrence steps forward.
 
     He does not have a speech. He has never been a man who reaches for speeches when the true thing is available. What he has is this:
@@ -6629,8 +6665,9 @@ She does not speak.
     He holds the gesture. Holds it past the point of comfort. Then, slowly, he lowers his hand. He places it, open, at his side.
 
     This is the offering.
-- else:
-    {lawrence >= 5:
+    - else:
+    {
+        - lawrence >= 5:
         Lawrence does not step forward. He stands at the threshold of section 11 and does not move.
 
         {avatarName} moves beside him.
@@ -6646,7 +6683,7 @@ She does not speak.
         He steps forward. He says what must be said: that he was here, that he left, that the han was his and the empty section his responsibility, that he is here now. Lawrence's hand rises to his sternum. Two fingers. The gesture brief but present.
 
         The offering is made.
-    - else:
+        - else:
         {avatarName} steps forward. Lawrence is at the eleventh station's threshold and not past it.
 
         The avatar makes the offering that belongs to Lawrence: naming the han as his, the empty section as his absence, the ceremony as real and binding and worth completing even now. The words are true. They are not his words. The ceremony registers the difference. Moon is freed; the ceremony is complete; but something in section 11 carries a gap that is the shape of what was not said by the person who should have said it.
@@ -6729,6 +6766,12 @@ Lawrence stands where he has stood since he lowered his hand. The impossible moo
 He does not say anything to Ihwa. She does not say anything to him. He said what he said. The moon is up.
 
 That is the entire scene.
+
+{
+    - lawrence >= 7:
+    ~ lawrenceArcComplete = true
+    - else:
+}
 
 + [After.] -> act10_ihwa_aftermath
 
@@ -6819,7 +6862,8 @@ Fang is already on the floor beside Ihwa -- not saying anything, not performing 
 Lawrence is standing where he lowered his hand at Geori 11. He has been standing there since the offering. He does not know what to do next. This is a condition he has not been in for approximately a thousand years.
 
 The wolf puppy crosses the ceremony floor. It sits at Lawrence's feet. It was not invited. It does not ask permission. It simply sits.
-{familiarSignalCount >= 7>><<journal "Wolf Puppy: Signal Seven" "It crossed the ceremony floor && sat at Lawrence's feet without being invited. The last signal. The old magic in him has settled." "familiar arc complete">><</if:
+{
+    - familiarSignalCount >= 7>><<journal "Wolf Puppy: Signal Seven" "It crossed the ceremony floor && sat at Lawrence's feet without being invited. The last signal. The old magic in him has settled." "familiar arc complete">><</if:
 
     + [Stay the night. (Optional.)] -> act10_night_optional
     + [The one exchange that matters, then the road.] -> act11_net_arrival
@@ -6874,7 +6918,8 @@ Lawrence's Version
 "(to Lawrence) You came wanting to die. Do you still want that?"
 A pause that has a thousand years in it.
 
-{lawrence >= 7:
+{
+    - lawrence >= 7:
 
     # speaker: Lawrence
     "(after a long moment) I came wanting the weight to stop. That is not the same thing as wanting to die. I have been learning the difference for the last few thousand miles."
@@ -6882,7 +6927,7 @@ A pause that has a thousand years in it.
     "I will remember that answer."
     ~ netAnswerLawrence = "complicated"
 
-- else:
+    - else:
 
     # speaker: Lawrence
     "(quietly, honestly) Yes."
@@ -7092,7 +7137,8 @@ The captain pockets it. Asks when they want to leave.
 // 📍 Mediterranean Port · Negotiation · Avatar
 Clear, honest request. Destination. Passenger manifest. Compensation offered. The captain is more responsive to this than to credentials, network reputation, or payment. The direct approach is the rarest thing a passenger has offered him.
 
-{(lawrence + fang + marcus) >= 9:
+{
+    - (lawrence + fang + marcus) >= 9:
 
     # speaker: Captain
     "(watching the party assemble) You people move like you've been doing this for a while."
@@ -7125,7 +7171,8 @@ The avatar sits nearby. He does not move away.
 "(to no one specific) The water feels right again. I had forgotten what right felt like."
 + [Optional: Find Marcus at the stern rail.] -> act14_ship_marcus
 + [Optional: The levity moment.] -> act14_ship_levity
-{fang >= 9:
+{
+    - fang >= 9:
 
     + [Optional: Fang and the letter. (Bond 9-10.)] -> act14_ship_jiwon
 }
@@ -7308,10 +7355,11 @@ Relentless forward pressure. Not a flip mechanic. These agents do not adapt -- t
 
 Each party member will hit their limit. The No Recovery protocol runs.
 
-{lawrence >= 7 && lawrenceArcComplete:
+{
+    - lawrence >= 7 && lawrenceArcComplete:
 
     + [Lawrence at the gate. (Bond 7+)] -> act17_lawrence_gate_high
-- else:
+    - else:
 
     + [Lawrence steps forward.] -> act17_lawrence_gate_low
 }
@@ -7362,11 +7410,12 @@ What Death Believes It Is Giving You
 
 Death offers each party member what they originally wanted. Death genuinely believes these are gifts.
 
-{netAnswerLawrence == "yes":
+{
+    - netAnswerLawrence == "yes":
 
     Lawrence's offer: the death he wanted in Act 0. Simple. Clean. The release he came for.
 
-- else:
+    - else:
 
     Lawrence's offer: the death he said in Act 11 that he no longer wanted. Death did not update its records.
 
@@ -7426,7 +7475,8 @@ The Argument That Certainty Cannot Answer
 "I governed Rome as if stability was virtue. I called it the Pax. It was a choice to preserve what we had at the cost of what we might have become. You made the same mistake at a different scale. That does not make it a different mistake."
 # speaker: Fang
 "I've been beside people who couldn't let go. I didn't fix them. I didn't argue with them. I sat there until they were ready. I have all day."
-{lawrenceDeathChoiceMade:
+{
+    - lawrenceDeathChoiceMade:
 
     # speaker: Lawrence
     "What you are offering is release from a weight I have carried for a thousand years. I came here wanting exactly that. I am not taking it. Not because it is not real. Because what I want now is not the same thing as what I arrived with. The difference is everyone in this room with me."
@@ -7456,13 +7506,14 @@ I Will Remember That Answer
 
 Net appears. The question is asked again -- each character's answer from Act 11 is now fulfilled.
 
-{netAnswerLawrence == "complicated" && lawrenceDeathChoiceMade:
+{
+    - netAnswerLawrence == "complicated" && lawrenceDeathChoiceMade:
 
     # speaker: Net
     "(to Lawrence) You said it was the weight, not the dying. I remember. What I owe you is not what you asked for at the start. It is what you arrived at."
     She gives him something that is not death and is not the original ask. It is what he became on the road. The player who followed Lawrence from Act 0 will know what it is without being told.
 
-- netAnswerLawrence == "yes":
+    - netAnswerLawrence == "yes":
 
     # speaker: Net
     "(to Lawrence) You said yes. I remember. I owe you what you asked for, when you are ready for it. You get to decide when that is."
