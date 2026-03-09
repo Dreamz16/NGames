@@ -78,6 +78,7 @@ namespace NGames.UI
                 _view?.ShowCharacterSlot(0, false);
                 _view?.ShowCharacterSlot(1, false);
                 _view?.SetDialogueAlignment(TMPro.TextAlignmentOptions.Left);
+                _view?.SetSpeakerNameplate("", Color.clear);
                 return;
             }
 
@@ -103,9 +104,11 @@ namespace NGames.UI
 
             _activeSlot = targetSlot;
             RefreshAlphas();
-            _view?.SetDialogueAlignment(_activeSlot == 0
-                ? TMPro.TextAlignmentOptions.Left
-                : TMPro.TextAlignmentOptions.Right);
+            bool onRight = _activeSlot == 1;
+            _view?.SetDialogueAlignment(onRight
+                ? TMPro.TextAlignmentOptions.Right
+                : TMPro.TextAlignmentOptions.Left);
+            _view?.SetSpeakerNameplate(ev.SpeakerName, GetColor(key), onRight);
         }
 
         private void OnChoices(ChoicePresentedEvent _)
@@ -119,12 +122,14 @@ namespace NGames.UI
             _view?.ShowCharacterSlot(1, false);
             _view?.SetSlotAlpha(0, ActiveAlpha);
             _view?.SetDialogueAlignment(TMPro.TextAlignmentOptions.Left);
+            _view?.SetSpeakerNameplate(playerName, GetColor(_slotKey[0]));
         }
 
         private void OnEnd(StoryEndedEvent _)
         {
             _view?.ShowCharacterSlot(0, false);
             _view?.ShowCharacterSlot(1, false);
+            _view?.SetSpeakerNameplate("", Color.clear);
             _slotKey[0] = _slotKey[1] = null;
         }
 
@@ -132,6 +137,7 @@ namespace NGames.UI
         {
             _view?.ShowCharacterSlot(0, false);
             _view?.ShowCharacterSlot(1, false);
+            _view?.SetSpeakerNameplate("", Color.clear);
             _slotKey[0] = _slotKey[1] = null;
         }
 

@@ -22,11 +22,15 @@ namespace NGames.Core.Narrative
         private const float WordsPerSecond  = 3.0f;   // reading speed
         private const float MinDelay        = 1.8f;   // shortest pause (very short lines)
         private const float MaxDelay        = 6.0f;   // longest pause (very long lines)
+        private const float CharsPerSecond  = 42f;    // typewriter reveal speed
 
         private bool                _awaitingChoice;
         private bool                _autoAdvancing;
         private Coroutine           _autoAdvanceCo;
         private Coroutine           _pulseCoroutine;
+        private Coroutine           _typewriterCo;
+        private bool                _typewriterRunning;
+        private string              _currentLineText;
         private ChoicePresentedEvent _pendingChoices;
         private bool                _sceneTransitionPending;
         private Coroutine           _transitionLineCo;
@@ -55,11 +59,11 @@ namespace NGames.Core.Narrative
             GameEventBus.Unsubscribe<SceneTransitionEvent>(OnSceneTransition);
         }
 
-        // ── Input — tap skips delay or reveals pending choices ────────────────
+        // ── Input — tap skips typewriter / delay / reveals choices ───────────
         private void Update()
         {
             if (_awaitingChoice) return;
-            if (!_autoAdvancing && _pendingChoices == null) return;
+            if (!_typewriterRunning && !_autoAdvancing && _pendingChoices == null) return;
 
             bool tapped =
                 (Keyboard.current    != null && (
@@ -70,7 +74,9 @@ namespace NGames.Core.Narrative
 
             if (!tapped) return;
 
-            if (_pendingChoices != null)
+            if (_typewriterRunning)
+                CompleteTypewriter();
+            else if (_pendingChoices != null)
                 RevealPendingChoices();
             else
                 SkipDelay();
@@ -106,18 +112,64 @@ namespace NGames.Core.Narrative
 
         private void ShowLine(string text)
         {
-            _awaitingChoice = false;
+            _awaitingChoice  = false;
+            _currentLineText = text;
             _view.HideChoices();
             _view.SetDialogueText(text);
-            _view.ShowAllCharacters();
+            _view.SetMaxVisibleCharacters(0);
             _view.AnimateLineIn();
             SetAdvance(false);
+            StopTypewriter();
+            _typewriterCo = StartCoroutine(TypewriterRoutine());
+        }
 
+        private IEnumerator TypewriterRoutine()
+        {
+            _typewriterRunning = true;
+            _view.ForceMeshUpdate();
+            int total = _view.GetVisibleCharacterCount();
+
+            for (int i = 1; i <= total; i++)
+            {
+                _view.SetMaxVisibleCharacters(i);
+                char c = _view.GetCharAt(i - 1);
+                float delay = 1f / CharsPerSecond;
+                if (c == '.' || c == '!' || c == '?' || c == '…') delay *= 5f;
+                else if (c == ',' || c == ';' || c == ':')         delay *= 2.5f;
+                else if (c == ' ' || c == '\n')                    delay *= 0.3f;
+                yield return new WaitForSeconds(delay);
+            }
+
+            _typewriterRunning = false;
+            _typewriterCo      = null;
+            OnTypewriterComplete();
+        }
+
+        private void OnTypewriterComplete()
+        {
+            _view.ShowAllCharacters();
             if (NarrativeManager.Instance?.CanContinue == true)
             {
-                float delay = ReadingDelay(text);
+                float delay = ReadingDelay(_currentLineText);
                 _autoAdvanceCo = StartCoroutine(AutoAdvanceRoutine(delay));
             }
+            else if (_pendingChoices != null)
+            {
+                SetAdvance(true);
+            }
+        }
+
+        private void CompleteTypewriter()
+        {
+            StopTypewriter();
+            _view.ShowAllCharacters();
+            OnTypewriterComplete();
+        }
+
+        private void StopTypewriter()
+        {
+            if (_typewriterCo != null) { StopCoroutine(_typewriterCo); _typewriterCo = null; }
+            _typewriterRunning = false;
         }
 
         private void OnChoicesPresented(ChoicePresentedEvent ev)
@@ -149,6 +201,7 @@ namespace NGames.Core.Narrative
             _pendingChoices         = null;
             _sceneTransitionPending = false;
             if (_transitionLineCo != null) { StopCoroutine(_transitionLineCo); _transitionLineCo = null; }
+            StopTypewriter();
             StopAutoAdvance();
             SetAdvance(false);
             _view.ShowEndPanel();

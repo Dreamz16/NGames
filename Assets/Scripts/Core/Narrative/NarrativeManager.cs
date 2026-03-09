@@ -39,6 +39,11 @@ namespace NGames.Core.Narrative
         // Used to keep their portrait visible on quoted continuation lines.
         private string _lastSpeakerName = string.Empty;
 
+        // ── Bond / stat variable tracking ──────────────────────────────────────
+        private static readonly string[] BondVars = { "lawrence", "fang", "marcus", "tiberius" };
+        private static readonly string[] StatVars  = { "dex", "flow", "end", "stag", "xp", "commitment" };
+        private readonly Dictionary<string, int> _varSnapshot = new();
+
         // ── Public state ───────────────────────────────────────────────────────
         public bool             IsStoryActive    => _story != null;
         public bool             CanContinue      => _pendingLine != null || (_story?.canContinue ?? false);
@@ -76,6 +81,8 @@ namespace NGames.Core.Narrative
 
             BindExternalFunctions();
             SyncPersistentVariablesToInk();
+            SnapshotVariables();
+            BindVariableObservers();
 
             GameEventBus.Publish(new EpisodeLoadedEvent { EpisodeId = episode.EpisodeId });
             Log($"Episode '{episode.EpisodeTitle}' loaded.");
@@ -240,6 +247,7 @@ namespace NGames.Core.Narrative
             _pendingLine     = null;
             _pendingTags     = null;
             _lastSpeakerName = string.Empty;
+            _varSnapshot.Clear();
         }
 
         // Returns true if a speaker tag was found
@@ -300,6 +308,55 @@ namespace NGames.Core.Narrative
                     break;
             }
             return false;
+        }
+
+        private void SnapshotVariables()
+        {
+            _varSnapshot.Clear();
+            foreach (var name in BondVars)
+                TrySnapshot(name);
+            foreach (var name in StatVars)
+                TrySnapshot(name);
+        }
+
+        private void TrySnapshot(string name)
+        {
+            try
+            {
+                var val = _story.variablesState[name];
+                if (val != null) _varSnapshot[name] = System.Convert.ToInt32(val);
+            }
+            catch { }
+        }
+
+        private void BindVariableObservers()
+        {
+            if (_story == null) return;
+            foreach (var name in BondVars)  RegisterObserver(name, isBond: true);
+            foreach (var name in StatVars)  RegisterObserver(name, isBond: false);
+        }
+
+        private void RegisterObserver(string name, bool isBond)
+        {
+            var captured = name;
+            try
+            {
+                _story.ObserveVariable(captured, (_, val) =>
+                {
+                    int newInt;
+                    try { newInt = System.Convert.ToInt32(val); } catch { return; }
+
+                    if (_varSnapshot.TryGetValue(captured, out int prev) && newInt == prev) return;
+                    int delta = newInt - (_varSnapshot.TryGetValue(captured, out int p2) ? p2 : 0);
+                    _varSnapshot[captured] = newInt;
+
+                    if (isBond)
+                        GameEventBus.Publish(new BondChangedEvent { CharacterName = captured, Delta = delta, NewValue = newInt });
+                    else
+                        GameEventBus.Publish(new StatChangedEvent { StatName = captured, Delta = delta, NewValue = newInt });
+                });
+            }
+            catch { /* variable may not exist in this episode */ }
         }
 
         /// <summary>Expose C# helpers to Ink scripts via external functions.</summary>

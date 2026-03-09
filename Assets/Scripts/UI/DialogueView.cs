@@ -58,6 +58,16 @@ namespace NGames.UI
         private CanvasGroup   _panelCg;
         private Coroutine     _textAnimRoutine;
 
+        // ── Speaker nameplate ──────────────────────────────────────────────────
+        private GameObject      _nameplate;
+        private Image           _nameplateBg;
+        private Image           _nameplateBar;
+        private TextMeshProUGUI _nameplateLabel;
+        private RectTransform   _nameplateRt;
+
+        // ── Panel accent line (top edge, changes color with active speaker) ────
+        private Image _panelAccentLine;
+
         // ── Lifecycle ──────────────────────────────────────────────────────────
         private void Awake()
         {
@@ -90,6 +100,8 @@ namespace NGames.UI
                 _dialogueRt = _dialogueText.GetComponent<RectTransform>();
 
             BuildCharacterSlots();
+            BuildNameplate();
+            BuildPanelAccentLine();
         }
 
         // ── Character slots ────────────────────────────────────────────────────
@@ -149,6 +161,119 @@ namespace NGames.UI
                 initRt.anchorMax = new Vector2(0.9f, 0.8f);
                 initRt.offsetMin = initRt.offsetMax = Vector2.zero;
             }
+        }
+
+        private void BuildNameplate()
+        {
+            _nameplate = new GameObject("SpeakerNameplate");
+            _nameplate.transform.SetParent(transform, false);
+            _nameplateRt = _nameplate.AddComponent<RectTransform>();
+            _nameplateRt.anchorMin = new Vector2(0.02f, 0.86f);
+            _nameplateRt.anchorMax = new Vector2(0.44f, 0.99f);
+            _nameplateRt.offsetMin = _nameplateRt.offsetMax = Vector2.zero;
+            _nameplate.SetActive(false);
+
+            _nameplateBg = _nameplate.AddComponent<Image>();
+            _nameplateBg.raycastTarget = false;
+            _nameplateBg.color = new Color(0.04f, 0.02f, 0.12f, 0.94f);
+
+            // Left accent bar
+            var barGo = new GameObject("AccentBar");
+            barGo.transform.SetParent(_nameplate.transform, false);
+            _nameplateBar = barGo.AddComponent<Image>();
+            _nameplateBar.raycastTarget = false;
+            var barRt = barGo.GetComponent<RectTransform>();
+            barRt.anchorMin = Vector2.zero;
+            barRt.anchorMax = new Vector2(0f, 1f);
+            barRt.offsetMin = Vector2.zero;
+            barRt.offsetMax = new Vector2(5f, 0f);
+
+            // Name text
+            var labelGo = new GameObject("NameLabel");
+            labelGo.transform.SetParent(_nameplate.transform, false);
+            _nameplateLabel = labelGo.AddComponent<TextMeshProUGUI>();
+            _nameplateLabel.alignment     = TextAlignmentOptions.MidlineLeft;
+            _nameplateLabel.fontStyle     = FontStyles.Bold;
+            _nameplateLabel.fontSize      = 15;
+            _nameplateLabel.color         = Color.white;
+            _nameplateLabel.raycastTarget = false;
+            _nameplateLabel.overflowMode  = TextOverflowModes.Ellipsis;
+            var labelRt = labelGo.GetComponent<RectTransform>();
+            labelRt.anchorMin = Vector2.zero;
+            labelRt.anchorMax = Vector2.one;
+            labelRt.offsetMin = new Vector2(12f, 3f);
+            labelRt.offsetMax = new Vector2(-4f, -3f);
+        }
+
+        private void BuildPanelAccentLine()
+        {
+            var lineGo = new GameObject("PanelAccentLine");
+            lineGo.transform.SetParent(transform, false);
+            lineGo.transform.SetSiblingIndex(0);
+            _panelAccentLine = lineGo.AddComponent<Image>();
+            _panelAccentLine.raycastTarget = false;
+            _panelAccentLine.color = new Color(0.25f, 0.18f, 0.55f, 0.5f);
+            var rt = lineGo.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(0f, -3f);
+            rt.offsetMax = Vector2.zero;
+        }
+
+        /// <summary>Show the speaker nameplate with the character's accent colour.</summary>
+        public void SetSpeakerNameplate(string name, Color accentColor, bool rightAligned = false)
+        {
+            if (_nameplate == null) return;
+
+            if (string.IsNullOrEmpty(name))
+            {
+                _nameplate.SetActive(false);
+                if (_panelAccentLine != null)
+                    _panelAccentLine.color = new Color(0.25f, 0.18f, 0.55f, 0.35f);
+                return;
+            }
+
+            _nameplate.SetActive(true);
+            _nameplateLabel.text = name.ToUpperInvariant();
+
+            var dark = new Color(accentColor.r * 0.10f, accentColor.g * 0.10f, accentColor.b * 0.10f, 0.96f);
+            _nameplateBg.color  = dark;
+            _nameplateBar.color = accentColor;
+            _nameplateLabel.color = new Color(
+                Mathf.Lerp(accentColor.r, 1f, 0.65f),
+                Mathf.Lerp(accentColor.g, 1f, 0.65f),
+                Mathf.Lerp(accentColor.b, 1f, 0.65f), 1f);
+
+            if (rightAligned)
+            {
+                _nameplateRt.anchorMin = new Vector2(0.56f, 0.86f);
+                _nameplateRt.anchorMax = new Vector2(0.98f, 0.99f);
+                _nameplateLabel.alignment = TextAlignmentOptions.MidlineRight;
+                // Move accent bar to right side
+                var barRt = _nameplateBar.GetComponent<RectTransform>();
+                barRt.anchorMin = new Vector2(1f, 0f);
+                barRt.anchorMax = Vector2.one;
+                barRt.offsetMin = new Vector2(-5f, 0f);
+                barRt.offsetMax = Vector2.zero;
+                _nameplateLabel.GetComponent<RectTransform>().offsetMin = new Vector2(4f,  3f);
+                _nameplateLabel.GetComponent<RectTransform>().offsetMax = new Vector2(-12f, -3f);
+            }
+            else
+            {
+                _nameplateRt.anchorMin = new Vector2(0.02f, 0.86f);
+                _nameplateRt.anchorMax = new Vector2(0.44f, 0.99f);
+                _nameplateLabel.alignment = TextAlignmentOptions.MidlineLeft;
+                var barRt = _nameplateBar.GetComponent<RectTransform>();
+                barRt.anchorMin = Vector2.zero;
+                barRt.anchorMax = new Vector2(0f, 1f);
+                barRt.offsetMin = Vector2.zero;
+                barRt.offsetMax = new Vector2(5f, 0f);
+                _nameplateLabel.GetComponent<RectTransform>().offsetMin = new Vector2(12f, 3f);
+                _nameplateLabel.GetComponent<RectTransform>().offsetMax = new Vector2(-4f,  -3f);
+            }
+
+            if (_panelAccentLine != null)
+                _panelAccentLine.color = new Color(accentColor.r * 0.7f, accentColor.g * 0.7f, accentColor.b * 0.7f, 0.65f);
         }
 
         /// <summary>Show or hide a character slot (0 = left, 1 = right).</summary>
@@ -294,9 +419,14 @@ namespace NGames.UI
             if (_dialogueText != null) _dialogueText.maxVisibleCharacters = int.MaxValue;
         }
 
-        // No-ops kept for compatibility
+        // Legacy no-ops — nameplate is now driven by CharacterDisplayManager
         public void SetSpeakerName(string name) { }
         public void SetPortrait(string portraitKey) { }
+
+        public void ForceMeshUpdate()
+        {
+            if (_dialogueText != null) _dialogueText.ForceMeshUpdate();
+        }
 
         // ── Choices ────────────────────────────────────────────────────────────
         public void ShowChoices(List<Choice> choices, Action<int> onChoiceSelected)

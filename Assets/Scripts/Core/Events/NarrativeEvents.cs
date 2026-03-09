@@ -65,4 +65,21 @@ namespace NGames.Core.Events
         public string FlagName;
         public bool   Value;
     }
+
+    // ── RPG progression feedback ───────────────────────────────────────────────
+    /// <summary>Fired when a character bond variable changes in Ink.</summary>
+    public class BondChangedEvent
+    {
+        public string CharacterName; // lowercase key: "fang", "marcus", etc.
+        public int    Delta;         // positive = gained, negative = lost
+        public int    NewValue;
+    }
+
+    /// <summary>Fired when a stat variable (xp, dex, flow, etc.) changes in Ink.</summary>
+    public class StatChangedEvent
+    {
+        public string StatName;  // "xp", "dex", "flow", "end", "stag", "commitment"
+        public int    Delta;
+        public int    NewValue;
+    }
 }
