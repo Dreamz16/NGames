@@ -16,20 +16,64 @@
 
 'use strict';
 
-const fs      = require('fs');
-const path    = require('path');
+const fs       = require('fs');
+const path     = require('path');
+const { execFileSync } = require('child_process');
 const chokidar = require('chokidar');
 const { convertTweeToInk } = require('./twee-to-ink');
 
 // ── Paths ──────────────────────────────────────────────────────────────────
-const ROOT        = path.resolve(__dirname, '../..');
-const WRITER_DIR  = path.join(ROOT, 'Writer');
+const ROOT         = path.resolve(__dirname, '../..');
+const WRITER_DIR   = path.join(ROOT, 'Writer');
 const EPISODES_DIR = path.join(ROOT, 'Assets', 'Ink', 'Episodes');
+const EPISODES_CFG = JSON.parse(fs.readFileSync(path.join(__dirname, 'episodes.json'), 'utf8'));
+
+// ── Find inklecate binary (npx cache or PATH) ─────────────────────────────
+function findInklecate() {
+    // Try npx-cached inklecate first
+    const npxCache = path.join(
+        process.env.HOME, '.npm', '_npx'
+    );
+    if (fs.existsSync(npxCache)) {
+        for (const dir of fs.readdirSync(npxCache)) {
+            const bin = path.join(npxCache, dir, 'node_modules', 'inklecate', 'bin', 'inklecate');
+            if (fs.existsSync(bin)) { try { fs.chmodSync(bin, '755'); } catch {} return bin; }
+        }
+    }
+    return null;  // fall back to Unity auto-compile
+}
+const INKLECATE = findInklecate();
+
+// ── Compile .ink → .json and copy to Resources ────────────────────────────
+function compileAndDeploy(baseName, inkPath) {
+    const cfg = EPISODES_CFG.find(e => e.tweeFile === baseName);
+    if (!cfg) return;   // no mapping — Unity will compile on next focus
+
+    const outJson = inkPath.replace(/\.ink$/, '.json');
+
+    if (INKLECATE) {
+        try {
+            execFileSync(INKLECATE, [inkPath], { stdio: 'pipe' });
+            // inklecate outputs {name}.json in the same directory
+            if (fs.existsSync(outJson)) {
+                const destPath = path.join(ROOT, cfg.resourcesPath);
+                fs.mkdirSync(path.dirname(destPath), { recursive: true });
+                fs.copyFileSync(outJson, destPath);
+                console.log(`[pipeline] Deployed → ${cfg.resourcesPath}`);
+            }
+        } catch (e) {
+            const stderr = e.stderr?.toString() || e.message;
+            console.error(`[pipeline] inklecate errors:\n${stderr}`);
+        }
+    } else {
+        console.log(`[pipeline] No inklecate found — Unity will compile on next editor focus.`);
+        console.log(`           Then manually copy the .ink.json to ${cfg.resourcesPath}`);
+    }
+}
 
 // ── Convert a single .twee file ────────────────────────────────────────────
 function convertFile(tweePath) {
     const baseName   = path.basename(tweePath, path.extname(tweePath));
-    // Episode folder name = .twee filename (e.g. "Stone_of_Commitment")
     const episodeDir = path.join(EPISODES_DIR, baseName);
     const outInkPath = path.join(episodeDir, `${baseName}.ink`);
 
@@ -37,7 +81,6 @@ function convertFile(tweePath) {
         const src = fs.readFileSync(tweePath, 'utf8');
         const ink = convertTweeToInk(src, baseName);
 
-        // Create episode folder if it doesn't exist
         if (!fs.existsSync(episodeDir)) {
             fs.mkdirSync(episodeDir, { recursive: true });
             console.log(`[pipeline] Created episode folder: ${path.relative(ROOT, episodeDir)}`);
@@ -46,7 +89,8 @@ function convertFile(tweePath) {
         fs.writeFileSync(outInkPath, ink, 'utf8');
         const ts = new Date().toLocaleTimeString();
         console.log(`[pipeline] ${ts}  ${path.relative(ROOT, tweePath)}  →  ${path.relative(ROOT, outInkPath)}`);
-        console.log(`           Unity will auto-recompile to .ink.json on next editor focus.`);
+
+        compileAndDeploy(baseName, outInkPath);
 
     } catch (err) {
         console.error(`[pipeline] ERROR converting ${tweePath}:`, err.message);
