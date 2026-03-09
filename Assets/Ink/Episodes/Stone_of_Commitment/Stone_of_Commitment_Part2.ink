@@ -393,6 +393,7 @@ Fang hums along with the hum for two bars. Then stops. Confused at herself.
 Nobody answers. She doesn't know the song. But Clare might.
 * [Continue into the Karakum.] -> act4_ambush
 === act4_ambush ===
+# music: fas_et_nefas_building
 # scene: karakum_dry_riverbed
 The wolf puppy tried to warn you. An hour ago, at the dune ridge, it oriented east. Fang noticed. Nobody else did.
 The sand moves first. Not underfoot. Under the surface. A compression wave you feel in your ankles before your brain processes it. Marcus drops flat, paws spread, reading.
@@ -640,6 +641,7 @@ The hardpan stretches ahead. Somewhere ahead, the terrain begins to climb. Duut 
 === act5_together ===
 ~ xp = xp + 40
 # achievement: threshold_together
+# music: fix_you_piano_only
 # scene: duut_mankhan_threshold
 Fang walks on your left. Her off-hand arm is still stiff, but she rolls the shoulder every few minutes, working the mobility back. She hums something under her breath. Not a song. A rhythm. The combat timing she uses when she's centering herself.
 Marcus walks behind, human form, the coat from Samarkand not warm enough but worn anyway. His footsteps are deliberate — he is relearning how to walk on two legs.
@@ -653,6 +655,7 @@ The landscape rises. The first rocks appear: not boulders, but teeth. The desert
 === act5_unresolved ===
 ~ xp = xp + 35
 # achievement: threshold_unresolved
+# music: fix_you_piano_only
 # scene: duut_mankhan_threshold
 Something between two of you is not finished. The silence sits in that gap like a guest who has arrived too early.
 Fang walks slightly ahead, favoring her arm. Her commentary is minimal. She is rationing something.
@@ -663,6 +666,7 @@ You walk forward anyway. The unresolved thing comes with you.
 === act5_alone ===
 ~ xp = xp + 30
 # achievement: threshold_alone
+# music: fix_you_piano_only
 # scene: duut_mankhan_threshold
 You walk ahead of them. Not far. Just enough that the wind between you and the party is yours alone.
 Behind you, the party settles into a formation that respects the distance without abandoning it. Marcus in the center. Fang on the left. Lawrence on the right where he can watch you walk away from him without you seeing his face while he does it.
@@ -678,6 +682,7 @@ Fang's voice carries forward, not directed at you. At Marcus. At the space.
 "I know, Fang."
 * [The road continues east.] -> act5_aftermath
 === act5_aftermath ===
+# music: white_night
 # scene: duut_mankhan_campfire
 // Nothing. Ambient only. The crackling of a fire the party did not discuss building. They just built it. That is the change.
 Nobody speaks for a long time. The fire does the work.

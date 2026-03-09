@@ -183,6 +183,7 @@ This is not strategic. This is Lawrence in the ruins of a city that reminds him 
 The wind moves through the empty doorway. The mosaic watches. You stand in the courtyard of a city that died of disconnection, with a man who has been disconnected for a thousand years.
 * [Night camp. Fang has a letter.] -> act6_night_camp
 === act6_night_camp ===
+# music: save_tonight_desert_version
 # scene: night_camp_gaochang
 The fire is built in the lee of a Gaochang wall that still stands. Overhead, the stars are thick and low.
 Fang produces the letter — the one Nadia tucked into the blade wrap in Samarkand. Eight hundred miles, carried next to steel.
@@ -400,6 +401,7 @@ Marcus stands. Inclines his head to the leader. Not a bow. An acknowledgment bet
 ~ stag = stag + 1
 ~ end = end - 1
 ~ xp = xp + 15
+# music: fas_et_nefas_building
 # scene: thousand_caves_almas_chamber
 They fight like something that doesn't want to hurt you but has no other language for "please leave." It costs you more than it should.
 * [Continue deeper.] -> act7_level4
@@ -415,6 +417,7 @@ The fourth level. The passages narrow. The stone here is different — denser, w
 The passage opens into a rest chamber — a natural alcove where the glowing stone is brightest, and the air, for the first time since entering the caves, is warm.
 * [Rest here.] -> act7_rest_choice
 === act7_rest_choice ===
+# music: fix_you_piano_only
 # scene: thousand_caves_rest_chamber
 The party settles. Nobody discusses it. The chamber is safe in the particular way of places that have decided to be hospitable.
 * [Sit with Fang. She has something to say about Jiwon.] -> act7_rest_jiwon
@@ -563,6 +566,7 @@ Kira's hands open. Palms up. She is not letting go. She is choosing to put it do
 === act7_stone_freed ===
 ~ xp = xp + 80
 # achievement: stone_guardian_freed
+# music: fas_et_nefas_swell
 # scene: foundation_chamber_liberation
 The Binding dissolves. Not with drama. With the particular sound of something that has been holding on for so long that its release sounds almost like silence — the end of a note that has been sustaining so long you forgot it was a note.
 Stone does not emerge. Stone <i>is</i>. The chamber fills with a presence that does not move through space the way other presences move — it simply becomes more present. The walls warm. The glowing intensifies and then settles into something ordinary. The fossil record on the walls outside briefly illuminates — every road, every structure, every promise — and then settles back to its ambient glow.
@@ -584,6 +588,7 @@ Kira, behind you, exhales. You do not turn around to look. Some moments are priv
 His hand finds yours in the dark of the Foundation Chamber. He holds it. This time, nobody is watching except the walls, which have been holding secrets for three hundred years and can hold one more.
 * [Begin the journey back.] -> act7_final_rest
 === act7_final_rest ===
+# music: white_night
 # scene: thousand_caves_final_rest
 The party rests at the cave entrance — not inside, not outside. The threshold. The tiger is still on its ledge. It has not moved. It watches you emerge.
 The wolf puppy stands fully in Fang's sling, looking up at the tiger across forty feet of valley air. The tiger looks back. Between them, something concludes.
@@ -637,6 +642,7 @@ That is enough. That is precisely enough.
 // JOURNAL (reference — available from any scene)
 // ════════════════════════════════════════════════════════════════════════════
 === journal ===
+# music: white_night
 # scene: journal_panel
 Journal entries recorded during your journey:
 { warden_peaceful:

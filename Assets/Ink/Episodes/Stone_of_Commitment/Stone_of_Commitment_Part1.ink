@@ -437,6 +437,7 @@ You charge. The ghosts scatter, then surge back, defensive and frightened, which
 
 === act1_combat_easy ===
 ~ xp = xp + 10
+# music: fas_et_nefas_building
 # scene: verdant_verge_deep
 You move with purpose. Lawrence's mind lance fires first, a clean suppression bolt at the nearest cluster. It passes through. The ghosts simply are not there in the way the lance expects them to be.
 
@@ -736,6 +737,7 @@ Marcus simply stands as you pass him. Eighteen hundred years of patience express
 ~ xp = xp + 15
 ~ end = end - 1
 ~ stag = stag + 1
+# music: fas_et_nefas_building
 # scene: verdant_verge_deep
 The ghosts are already agitated. Your charge at the edge rattled something in them, and now they move with the particular violence of things disturbed mid-grief.
 
@@ -900,6 +902,7 @@ Then she chooses. Her arms lower on her own terms. Nobody told her. Nobody convi
 // ════════════════════════════════════════════════════════════════════════════
 
 === bridge_inn ===
+# music: save_tonight_bar_version
 # scene: portside_inn
 {get_player_name()}'s hands are still cold. Not from temperature. From the place between the treeline and the meadow, where three hundred people who had been walking for three centuries finally stopped walking through her. She can still feel the hem of a garment that no longer exists brushing her wrist. She keeps rubbing the spot without deciding to.
 
