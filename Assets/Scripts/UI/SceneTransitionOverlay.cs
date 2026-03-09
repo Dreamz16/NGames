@@ -56,11 +56,12 @@ namespace NGames.UI
             _routine = StartCoroutine(Transition());
         }
 
-        // Total blackout window = FadeIn + Hold = 0.65 s
-        // SceneBackgroundController delays its swap by the same amount.
         private const float FadeIn  = 0.45f;
         private const float Hold    = 0.20f;
         private const float FadeOut = 1.20f;
+
+        /// <summary>Duration the screen is fully black. Other systems delay their updates by this.</summary>
+        public const float BlackoutDuration = FadeIn + Hold; // 0.65 s
 
         private IEnumerator Transition()
         {

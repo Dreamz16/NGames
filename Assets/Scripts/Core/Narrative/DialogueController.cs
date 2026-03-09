@@ -28,6 +28,8 @@ namespace NGames.Core.Narrative
         private Coroutine           _autoAdvanceCo;
         private Coroutine           _pulseCoroutine;
         private ChoicePresentedEvent _pendingChoices;
+        private bool                _sceneTransitionPending;
+        private Coroutine           _transitionLineCo;
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
         private void Awake()
@@ -41,6 +43,7 @@ namespace NGames.Core.Narrative
             GameEventBus.Subscribe<ChoicePresentedEvent>(OnChoicesPresented);
             GameEventBus.Subscribe<StoryEndedEvent>(OnStoryEnded);
             GameEventBus.Subscribe<SpeakerChangedEvent>(OnSpeakerChanged);
+            GameEventBus.Subscribe<SceneTransitionEvent>(OnSceneTransition);
         }
 
         private void OnDisable()
@@ -49,6 +52,7 @@ namespace NGames.Core.Narrative
             GameEventBus.Unsubscribe<ChoicePresentedEvent>(OnChoicesPresented);
             GameEventBus.Unsubscribe<StoryEndedEvent>(OnStoryEnded);
             GameEventBus.Unsubscribe<SpeakerChangedEvent>(OnSpeakerChanged);
+            GameEventBus.Unsubscribe<SceneTransitionEvent>(OnSceneTransition);
         }
 
         // ── Input — tap skips delay or reveals pending choices ────────────────
@@ -73,20 +77,45 @@ namespace NGames.Core.Narrative
         }
 
         // ── Event Handlers ─────────────────────────────────────────────────────
+        private void OnSceneTransition(SceneTransitionEvent _)
+        {
+            _sceneTransitionPending = true;
+        }
+
         private void OnLineRead(StoryLineReadEvent ev)
         {
-            _awaitingChoice = false;
             StopAutoAdvance();
 
+            if (_sceneTransitionPending)
+            {
+                _sceneTransitionPending = false;
+                if (_transitionLineCo != null) StopCoroutine(_transitionLineCo);
+                _transitionLineCo = StartCoroutine(ShowLineAfterBlackout(ev.Text));
+                return;
+            }
+
+            ShowLine(ev.Text);
+        }
+
+        private IEnumerator ShowLineAfterBlackout(string text)
+        {
+            yield return new WaitForSeconds(SceneTransitionOverlay.BlackoutDuration);
+            _transitionLineCo = null;
+            ShowLine(text);
+        }
+
+        private void ShowLine(string text)
+        {
+            _awaitingChoice = false;
             _view.HideChoices();
-            _view.SetDialogueText(ev.Text);
+            _view.SetDialogueText(text);
             _view.ShowAllCharacters();
             _view.AnimateLineIn();
             SetAdvance(false);
 
             if (NarrativeManager.Instance?.CanContinue == true)
             {
-                float delay = ReadingDelay(ev.Text);
+                float delay = ReadingDelay(text);
                 _autoAdvanceCo = StartCoroutine(AutoAdvanceRoutine(delay));
             }
         }
@@ -116,8 +145,10 @@ namespace NGames.Core.Narrative
 
         private void OnStoryEnded(StoryEndedEvent _)
         {
-            _awaitingChoice = false;
-            _pendingChoices = null;
+            _awaitingChoice         = false;
+            _pendingChoices         = null;
+            _sceneTransitionPending = false;
+            if (_transitionLineCo != null) { StopCoroutine(_transitionLineCo); _transitionLineCo = null; }
             StopAutoAdvance();
             SetAdvance(false);
             _view.ShowEndPanel();

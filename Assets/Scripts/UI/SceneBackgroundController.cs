@@ -94,8 +94,7 @@ namespace NGames.UI
         private void OnDisable() => GameEventBus.Unsubscribe<SceneTransitionEvent>(OnScene);
 
         // ── Handler ───────────────────────────────────────────────────────────
-        // Must match SceneTransitionOverlay.FadeIn + SceneTransitionOverlay.Hold
-        private const float BlackoutDuration = 0.65f;
+        private const float BlackoutDuration = SceneTransitionOverlay.BlackoutDuration;
 
         private void OnScene(SceneTransitionEvent ev)
         {
