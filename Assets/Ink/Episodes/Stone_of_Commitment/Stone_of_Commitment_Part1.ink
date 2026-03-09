@@ -75,15 +75,7 @@ You arrived following a quest thread: local merchants reporting ships returning 
 Your party is already waiting. They have been waiting since yesterday.
 There are two layers to this story. The Game Layer — what happens inside Ninkasa, where immortals fight and Guardians are freed. The IRL Layer — the people behind the characters, whose real lives bleed through. The game will not tell you which is which.
 
-* [Begin.] -> avatar_name_select
-
-=== avatar_name_select ===
-# scene: character_select
-What should they call you?
-Your handle is FortuneBringsProsperity. The party will shorten this immediately.
-
-* [Fortune.] -> mo_stor_descent
-* [A different name.] -> mo_stor_descent
+* [Begin.] -> mo_stor_descent
 
 === mo_stor_descent ===
 # scene: mo_stor_exterior
