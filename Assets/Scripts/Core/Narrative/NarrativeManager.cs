@@ -35,6 +35,10 @@ namespace NGames.Core.Narrative
         private string       _pendingLine;
         private List<string> _pendingTags;
 
+        // Last character who had an explicit # speaker: tag.
+        // Used to keep their portrait visible on quoted continuation lines.
+        private string _lastSpeakerName = string.Empty;
+
         // ── Public state ───────────────────────────────────────────────────────
         public bool             IsStoryActive    => _story != null;
         public bool             CanContinue      => _pendingLine != null || (_story?.canContinue ?? false);
@@ -114,13 +118,25 @@ namespace NGames.Core.Narrative
             }
 
             bool speakerTagFound = ProcessTags(allTags);
-            if (!speakerTagFound)
+
+            // A continuation line is untagged quoted dialogue from the last known speaker.
+            bool isDialogueContinuation = !speakerTagFound
+                && !string.IsNullOrEmpty(_lastSpeakerName)
+                && !string.IsNullOrEmpty(line)
+                && line.TrimStart().StartsWith("\"");
+
+            if (isDialogueContinuation)
+                GameEventBus.Publish(new SpeakerChangedEvent { SpeakerName = _lastSpeakerName });
+            else if (!speakerTagFound)
+            {
+                _lastSpeakerName = string.Empty;
                 GameEventBus.Publish(new SpeakerChangedEvent { SpeakerName = string.Empty });
+            }
 
             // ── Narrator batching ──────────────────────────────────────────────
-            // If this line has no speaker, read ahead and concatenate all
-            // consecutive narrator lines so they appear as a single block.
-            if (!speakerTagFound && !string.IsNullOrEmpty(line))
+            // If this line has no speaker (and is not a dialogue continuation),
+            // read ahead and concatenate all consecutive narrator lines.
+            if (!speakerTagFound && !isDialogueContinuation && !string.IsNullOrEmpty(line))
             {
                 var sb = new System.Text.StringBuilder(line);
 
@@ -209,8 +225,9 @@ namespace NGames.Core.Narrative
         public void JumpToKnot(string knotName)
         {
             if (_story == null) return;
-            _pendingLine = null;
-            _pendingTags = null;
+            _pendingLine     = null;
+            _pendingTags     = null;
+            _lastSpeakerName = string.Empty;
             _story.ChoosePathString(knotName);
             ContinueStory();
         }
@@ -218,10 +235,11 @@ namespace NGames.Core.Narrative
         // ── Internal ───────────────────────────────────────────────────────────
         private void UnloadCurrentStory()
         {
-            _story          = null;
-            _currentEpisode = null;
-            _pendingLine    = null;
-            _pendingTags    = null;
+            _story           = null;
+            _currentEpisode  = null;
+            _pendingLine     = null;
+            _pendingTags     = null;
+            _lastSpeakerName = string.Empty;
         }
 
         // Returns true if a speaker tag was found
@@ -248,6 +266,7 @@ namespace NGames.Core.Narrative
             switch (key)
             {
                 case "speaker":
+                    _lastSpeakerName = value;
                     GameEventBus.Publish(new SpeakerChangedEvent { SpeakerName = value });
                     return true;
                 case "speaker_portrait":

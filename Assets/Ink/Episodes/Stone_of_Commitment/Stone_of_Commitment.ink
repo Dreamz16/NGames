@@ -22,7 +22,6 @@
 //   - No Recovery Fracture mechanic preserved via no_recovery_unlocked flag.
 //   - All 110+ source passages converted across 3 part files.
 // ────────────────────────────────────────────────────────────────────────────
-
 INCLUDE Stone_of_Commitment_Part1.ink
 INCLUDE Stone_of_Commitment_Part2.ink
 INCLUDE Stone_of_Commitment_Part3.ink

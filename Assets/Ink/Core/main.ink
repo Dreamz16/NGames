@@ -15,5 +15,4 @@
 //   4. Drag the manifest into EpisodeRegistry.Episodes list
 //   Done — the episode appears in the episode select screen.
 // ────────────────────────────────────────────────────────────────────────────
-
 -> END
