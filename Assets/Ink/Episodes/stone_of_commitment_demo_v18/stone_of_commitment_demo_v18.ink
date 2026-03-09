@@ -9,21 +9,33 @@ INCLUDE ../../Shared/functions.ink
 EXTERNAL get_player_name()
 EXTERNAL has_completed_episode(episode_id)
 
+VAR dex = 0
+VAR flow = 0
+VAR lawrence = 0
+VAR marcus = 0
+VAR fang = 0
+VAR xp = 0
 VAR tkAct0 = true
 VAR dockArmCost = true
 VAR dockFightLethal = true
 VAR artificerUsed = true
+VAR artificerItems = 0
 VAR tkLatent = true
 VAR artificerSeen = true
 VAR marcusConsulted = true
+VAR stag = 0
+VAR end = 0
 VAR observedForest = true
+VAR familiarSignalCount = 0
 VAR wardenPeaceful = true
 VAR tribunalDialogue = true
 VAR noRecoveryUnlocked = true
+VAR chestPressCount = 0
 VAR heartbeatPlanted = true
 VAR skyResonance = "trust"
 VAR pushedThrough = true
 VAR batuMet = true
+VAR jeff = 0
 VAR gaochangScene = true
 VAR tariqLedger = true
 VAR gaochang = "passed"
@@ -32,14 +44,16 @@ VAR kiraApproach = 1
 VAR noRecoveryKira = true
 VAR kiraFracture = true
 VAR kiraBound = "fang"
+VAR commitment = 0
 VAR spiderWebReader = true
 VAR spiderFear = true
 VAR jiwonSeen = true
 VAR commitmentUnlocked = true
 VAR stoneFreeCount = 3
 VAR marcusSeenYou = true
-VAR artificerItems = 1
 VAR fireCampOpen = true
+VAR moStorVisits = 0
+VAR tiberius = 0
 VAR waystoneCharges = 1
 VAR marcusTouched = true
 VAR avatarConsentShown = true
@@ -76,6 +90,10 @@ VAR deathFought = true
 VAR deathLiberated = true
 VAR moStorFinal = true
 VAR tiberiusStoolNamed = true
+VAR avatarName = 0
+VAR fortuneGroveAnswer = "Fortune"
+VAR irlPlayer = 0
+VAR drinkFinished = 0
 
 === opening ===
 // ═══ STONE OF COMMITMENTVanquish Death ═══
@@ -4822,7 +4840,7 @@ Your thumbs hover. The cursor blinks. You are aware, suddenly, that you do not k
 Every choice, every silence, every moment the world shifted. This is your record. It cannot be undone, only understood.
 
 {
-    - journal.length === 0:
+    - 0 == 0:
     No entries yet. Your story is waiting to begin.
     - else:
     /* TODO: <<for _i, _entry range $journal>> */
@@ -6843,7 +6861,6 @@ That is the entire scene.
 {
     - lawrence >= 7:
     ~ lawrenceArcComplete = true
-    - else:
 }
 
 + [After.] -> act10_ihwa_aftermath
@@ -7636,454 +7653,6 @@ Yes. Same thing as always. They are home.
 + [Read your journal.] -> journal
 + [Play again from the beginning.] -> layermap
 
-=== storyscript ===
-/* © Studio Zisha 2026
-─────────────────────────────────────────────────────────────────────────
-RULE 10 EXCEPTION: DIALOGUE CARVE-OUT
-Rule 10: Anytime "Win" or "Fail" is mentioned in SYSTEM UI, correct to
-"Resonance" or "Fracture".
-
-Exception: "win", "fail", and their conjugates are permitted inside
-character dialogue tags (...) when they reflect
-a character's natural speech. Replacing them in dialogue breaks voice,
-undermines authenticity, and distorts the line's emotional register.
-
-Canonical example preserved under this exception (Act 3, Highwind Pass):
-Marcus: "She's not trying to win anymore..."
-Marcus: "Someone fighting to win still believes they can..."
-These are tactical battlefield observations spoken in a character's voice.
-They are not outcome-state labels. They stand as written.
-
-Rule 10 enforcement applies to: > blocks, RESONANCE/FRACTURE banners,
-hint text, journal entries, and any non-dialogue narrator text.
-─────────────────────────────────────────────────────────────────────────
-*/
-/* ── STATE VARIABLES ── */
-State.variables.lawrence = 0;
-State.variables.fang     = 0;
-State.variables.marcus   = 0;
-State.variables.tiberius = 0;
-State.variables.dex      = 0;
-State.variables.flow     = 0;
-State.variables.end      = 0;
-State.variables.stag     = 0;
-State.variables.xp       = 0;
-State.variables.commitment = 0;
-
-/* ── EMOTIONAL STATE ── */
-State.variables.emotion  = "Curious";
-
-/* ── MECHANIC FLAGS ── */
-State.variables.noRecoveryUnlocked = false;
-State.variables.heartbeatCount     = 0;
-State.variables.chestPressCount    = 0;
-State.variables.jiwonSeen          = false;
-State.variables.demoComplete       = false;
-State.variables.commitmentUnlocked = false;
-
-/* ── NARRATIVE FLAGS ── */
-State.variables.observedForest   = false;
-State.variables.marcusConsulted  = false;
-State.variables.wardenPeaceful   = false;
-State.variables.fireCampOpen     = false;
-State.variables.tribunalDialogue = false;
-State.variables.skyResonance     = "none";
-State.variables.saltFlatsChoice  = "";
-State.variables.drinkFinished    = false;
-
-/* ── WAYSTONE VARIABLES ── */
-State.variables.waystoneCharges  = 1;
-State.variables.moStorVisits     = 0;
-
-/* ── FAMILIAR ARC ── */
-State.variables.familiarSignalCount = 0;
-
-/* ── JOURNAL SYSTEM ── */
-State.variables.journal = [];
-
-/* ── AVATAR ── */
-State.variables.avatarName = "Fortune";
-State.variables.fortuneGroveAnswer = "";
-State.variables.irlPlayer  = "Ishani";
-State.variables.buildScope = "DEMO";
-
-/* ── ACTS 6-7 VARIABLES ── */
-State.variables.tariqLedger      = false;
-State.variables.batuMet          = false;
-State.variables.batuPath         = "";
-State.variables.almasNegotiated  = false;
-State.variables.almasVibration   = false;
-State.variables.spiderWebReader  = false;
-State.variables.kiraBound        = "";
-State.variables.stoneFreeCount   = 0;
-State.variables.gaochangScene    = false;
-State.variables.partyFriction    = false;
-
-/* ── WAYSTONE TRACKING ── */
-State.variables.lastLocation = "Act8_BridgeToMoon"; // updated at each act transition
-
-/* ── KAI ENCOUNTER FLAGS (v5) ── */
-State.variables.kaiRheaPortScene   = false;  // Kai Rhea Port encounter triggered
-State.variables.kaiSusceptible     = false;  // Fortune susceptible to enspell trace (incomplete -- Lawrence intervened)
-State.variables.kaiEnspellAwareness = false; // Fortune was aware of the mechanism during the enspell (DEX 3+ or Lawrence 4+)
-State.variables.kaiSunFreedSeen    = false;  // Kai Late Beat 1 (between Sun and Moon) triggered
-
-/* ── AVATAR PROTECTION FLAG ── */
-// Elena / ILickTheSpoon avatars: enspell compliance never includes sexual compliance regardless of completion state
-// Set this flag true when avatar selection confirms Elena or ILickTheSpoon identity
-State.variables.avatarProtected    = false;
-
-/* ── ACT 8-9 FLAGS ── */
-State.variables.sunFreeCount   = 0;
-State.variables.moonApproach   = false;
-State.variables.jiwonHanjiAdded = false;
-
-/* ── DEATH ARC FLAGS (v10) ── */
-State.variables.deathArcStarted       = false;
-State.variables.netConversationComplete = false;
-State.variables.netAnswerLawrence     = "";   // "yes" / "no" / "complicated"
-State.variables.netAnswerFang         = "";   // "given" / "chosen"
-State.variables.netAnswerMarcus       = "";   // "form" / "truth"
-State.variables.netAnswerAvatar       = "";
-State.variables.deathOfferEngaged     = false;
-State.variables.deathOfferTaken       = false;
-State.variables.lawrenceDeathChoiceMade = false;
-State.variables.marcusViaAppiaStop    = false;
-State.variables.jiwonLetterOpened     = false;
-State.variables.deathFought           = false;
-State.variables.deathLiberated        = false;
-State.variables.tiberiusStoolNamed    = false;
-State.variables.moStorFinal           = false;
-
-/* ── ACT 9 -- MOON ARC FLAGS ── */
-State.variables.moonFreeCount      = 0;     // set to 5 when Moon Guardian freed
-State.variables.moonFreed          = false; // true after Geori 12 completes
-State.variables.lawrenceArcComplete = false; // true if Lawrence Bond 7+ at Geori 11
-
-/* ── KAI FLAGS (v4) ── */
-State.variables.kaiMet               = false;   // Kai marketplace encounter triggered
-State.variables.kaiBoundarySet       = false;   // Player set a boundary with Kai
-State.variables.kaiCombatTriggered   = false;   // Combat with Kai occurred
-State.variables.kaiNoRecoveryWitnessed = false; // Player used No Recovery during Kai combat
-
-/* ── PARASOCIAL RELATIONSHIP FLAGS (v15) ── */
-State.variables.jeff                 = 0;       // IRL Byung-Ho bond (0-10). Never display as number. Expressed through text tone only.
-State.variables.fangSeen             = false;   // Fang asked the avatar the right question (Bridge_Samarkand_FangQuestion)
-State.variables.fangFamiliar         = false;   // Fang named the familiar feeling at the salt flats (Bridge_SaltFlats_FangDawn)
-State.variables.gaochang             = "";      // "lean" / "hold" / "passed" -- tracks player's Gaochang consent choice
-State.variables.lawrenceFracture     = false;   // Player provoked Lawrence at Supply scene; trust must be rebuilt
-State.variables.marcusSeenYou        = false;   // Marcus named what he observed (Marcus_Sees_You)
-State.variables.marcusTouched        = false;   // Player placed hand on Marcus's arm (Marcus_CounterOath)
-State.variables.heartbeatPlanted     = false;   // Player has heard the Heartbeat plant in Act 2 (internal tracker)
-State.variables.avatarConsentShown   = false;   // Avatar has modeled consent-first behavior toward an NPC
-/* ── STAT BAR ── */
-$(document).on(':passagedisplay', function() {
-var v = State.variables;
-var bar = document.getElementById('stat-bar');
-if (!bar) {
-bar = document.createElement('div');
-bar.id = 'stat-bar';
-document.body.appendChild(bar);
-}
-bar.innerHTML =
-'XP ' + v.xp + '' +
-'Lawrence ' + v.lawrence + '' +
-'Fang ' + v.fang + '' +
-'Marcus ' + v.marcus + '' +
-'Tiberius ' + v.tiberius + '' +
-'DEX ' + v.dex + '' +
-'FLOW ' + v.flow + '' +
-'END ' + v.end + '' +
-'♫ ' + v.heartbeatCount + '' +
-'IRL ' + v.jeff + '';
-});
-
-/* ── CUSTOM MACROS ── */
-
-/* >: tracks Heartbeat theme deployment */
-Macro.add('heartbeat', {
-handler: function() {
-State.variables.heartbeatCount++;
-var el = this.output;
-var note = document.createElement('div');
-note.className = 'sys music hb-pulse';
-note.innerHTML = '♫ HEARTBEAT #' + State.variables.heartbeatCount + ': ' + this.args[0];
-el.appendChild(note);
-}
-});
-
-/* >: tracks Lawrence chest-press gesture */
-Macro.add('chestpress', {
-handler: function() {
-State.variables.chestPressCount++;
-var el = this.output;
-var p = document.createElement('p');
-p.style.cssText = 'color:#a78bfa;font-style:italic;margin:.8rem 0;';
-p.innerHTML =  + this.args[0] + ;
-el.appendChild(p);
-}
-});
-
-/* >: inline stat display (used in specific passages) */
-Macro.add('statbar', {
-handler: function() {
-/* rendered by StoryReady HUD; this macro is a no-op kept for compatibility */
-}
-});
-/* ── START OVERRIDE ── */
-Config.passages.start = "Opening";
-Config.history.maxStates = 40;
-
-/* ── SAFE BACKWARD NAVIGATION ── */
-/* Single guard function used by BOTH the demo back button and the Journal Return link.
-Prevents Engine.backward() from firing when history has no valid previous state.
-Also prevents backward navigation INTO one-way narrative gates. */
-window.safeBackward = function() {
-/* SugarCube 2.37 -- Engine.backward() is the correct documented API.
-State.length > 1 means there is at least one previous moment to return to. */
-if (State.length <= 1) return false;
-Engine.backward();
-return true;
-};
-
-/* ── > macro ── */
-Macro.add('journal', {
-handler: function() {
-var title = this.args[0] || '';
-var body  = this.args[1] || '';
-var tag   = this.args[2] || 'event';
-State.variables.journal.push({
-title: title,
-body:  body,
-tag:   tag,
-passage: State.passage
-});
-}
-});
-
-/* ── DEMO BACK BUTTON ── */
-$(document).on(':passageend', function() {
-if (State.variables.buildScope !== "DEMO") return;
-var passage = State.passage;
-/* Static skip: true one-way gates and system passages ONLY.
-MoStor_Descent is NOT a gate -- testers need to go back from there. */
-var skip = ['StoryTitle','StoryStylesheet','StoryInit','StoryReady',
-'Opening',
-'-webkit-scrollbar','-webkit-scrollbar-thumb',
-'-webkit-scrollbar-thumb:hover','-webkit-scrollbar-track',
-'LayerMap','AvatarName',
-'IRL_Chat_Close','IRL_Chat_Close_Name','IRL_Chat_Decline','Journal'];
-if (skip.indexOf(passage) !== -1) return;
-/* Dynamic skip: nothing to go back to (SugarCube 2.37 -- State.length is the count) */
-if (State.length <= 1) return;
-/* Prevent duplicate buttons within the same render */
-if (document.querySelector('.demo-back')) return;
-var psg = document.querySelector('.passage');
-if (!psg) return;
-var div = document.createElement('div');
-div.className = 'demo-back';
-var link = document.createElement('a');
-link.href = '#';
-link.innerHTML = '\u2190 Back';
-link.addEventListener('click', function(e) {
-e.preventDefault();
-window.safeBackward();
-});
-var tag = document.createElement('span');
-tag.className = 'demo-tag';
-tag.textContent = ' [DEMO]';
-div.appendChild(link);
-div.appendChild(tag);
-/* Insert AFTER last choice button -- :passageend guarantees DOM is complete */
-var choices = psg.querySelectorAll('.choice');
-if (choices.length > 0) {
-var last = choices[choices.length - 1];
-last.parentNode.insertBefore(div, last.nextSibling);
-} else {
-psg.appendChild(div);
-}
-});
-
--> END
-
-=== storystylesheet ===
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-
-/* ── RESET & BASE ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body, html { background: #0f0e17; }
-
-/* ── STORY AREA ── */
-#story {
-font-family: 'EB Garamond', Georgia, serif;
-font-size: 1.2rem;
-color: #e8e0d0;
-line-height: 1.85;
-}
-
-#passages {
-max-width: 800px;
-margin: 0 auto;
-padding: 2rem 1.5rem 6rem;
-}
-
-.passage { padding: 0; }
-
-/* ── ACT BANNER ── */
-.act-banner {
-background: linear-gradient(135deg, #1e1b4b 0%, #2d1b69 100%);
-border: 1px solid #6b21a8;
-border-radius: 6px;
-padding: 1.4rem 2rem;
-margin-bottom: 2rem;
-text-align: center;
-}
-.act-title {
-font-family: 'Cinzel', serif;
-font-size: 1.7rem;
-color: #f9fafb;
-letter-spacing: .1em;
-margin-bottom: .35rem;
-}
-.act-sub {
-font-style: italic;
-color: #a5b4fc;
-font-size: .95rem;
-}
-
-/* ── LOCATION TAG ── */
-.loc-tag {
-display: inline-block;
-background: #ede9fe;
-color: #4c1d95;
-font-style: italic;
-font-size: .88rem;
-padding: .35rem .85rem;
-border-radius: 4px;
-margin-bottom: 1.25rem;
-}
-
-/* ── HEADINGS ── */
-h2.sc-h2 {
-font-family: 'Cinzel', serif;
-color: #c4b5fd;
-font-size: 1.2rem;
-border-bottom: 1px solid #3730a3;
-padding-bottom: .3rem;
-margin: 2rem 0 .9rem;
-}
-h3.sc-h3 {
-color: #fbbf24;
-font-size: 1.05rem;
-margin: 1.5rem 0 .5rem;
-}
-
-/* ── BODY TEXT ── */
-p { margin: .6rem 0; }
-
-/* ── DIALOGUE ── */
-.dlg {
-margin: .5rem 0 .5rem 1.5rem;
-padding-left: 1rem;
-border-left: 3px solid #3730a3;
-}
-.who { font-weight: 700; font-style: normal; }
-.who.lawrence  { color: #a78bfa; }
-.who.fang      { color: #34d399; }
-.who.marcus    { color: #60a5fa; }
-.who.ishani    { color: #f9a8d4; }
-.who.tiberius  { color: #fbbf24; }
-.who.warden    { color: #94a3b8; }
-.who.tidewarden{ color: #f87171; }
-.who.sky       { color: #7dd3fc; }
-.who.sera      { color: #fcd34d; }
-.who.water     { color: #67e8f9; }
-.who.tariq     { color: #c4b5fd; }
-.who.batu      { color: #a78bfa; }
-.who.kira      { color: #fb923c; }
-.who.kai       { color: #c084fc; }
-.who.npc       { color: #d1d5db; }
-.line { color: #e8e0d0; }
-
-/* ── SYSTEM NOTES ── */
-.sys {
-border-radius: 5px;
-padding: .65rem 1rem;
-margin: 1rem 0;
-font-size: .9rem;
-line-height: 1.55;
-}
-.sys.note  { display: none; }
-.sys.info  { display: none; }
-.sys.good  { background:#dcfce7; color:#14532d; border-left:4px solid #166534; }
-.sys.warn  { background:#fee2e2; color:#7f1d1d; border-left:4px solid #991b1b; }
-.sys.music { display: block; background:#fef3c7; color:#78350f; border-left:4px solid #b45309; }
-
-/* ── CHOICES ── */
-.choice {
-display: flex;
-align-items: baseline;
-gap: .75rem;
-margin: .45rem 0;
-padding: .65rem 1rem;
-background: #1a1740;
-border: 1px solid #3730a3;
-border-radius: 5px;
-transition: background .15s, border-color .15s;
-}
-.choice:hover { background: #252060; border-color: #6b21a8; }
-.choice a {
-color: #fbbf24 !important;
-font-weight: 600;
-text-decoration: none !important;
-flex: 1;
-cursor: pointer;
-}
-.choice a:hover { color: #fde68a !important; }
-.hint {
-color: #6b7280;
-font-size: .8rem;
-font-style: italic;
-flex: 0 0 auto;
-max-width: 210px;
-text-align: right;
-}
-
-/* ── STAT BAR ── */
-#stat-bar {
-position: fixed;
-top: 0; left: 0; right: 0;
-background: rgba(15,14,23,.92);
-backdrop-filter: blur(6px);
-border-bottom: 1px solid #1e1b4b;
-padding: .4rem 1.5rem;
-display: flex;
-flex-wrap: wrap;
-gap: .5rem 1.2rem;
-font-size: .82rem;
-color: #a5b4fc;
-z-index: 1000;
-}
-#stat-bar .sv { color: #fbbf24; font-weight: 700; }
-#stat-bar .sl { color: #a5b4fc; }
-
-/* ── HEARTBEAT ANIMATION ── */
-@keyframes hbpulse {
-0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(180,83,9,0); }
-40%     { opacity: .7; box-shadow: 0 0 0 6px rgba(180,83,9,.3); }
-}
-.sys.music.hb-pulse { animation: hbpulse 1.4s ease-in-out 2; }
-
-/* ── UI BAR ── */
-#ui-bar { background: #0f0e17; border-right: 1px solid #1e1b4b; }
-#ui-bar-body, #ui-bar-history, .ui-bar-body { color: #a5b4fc; }
-#story-title { font-family: 'Cinzel', serif; color: #c4b5fd !important; font-size: .95rem; }
-
-/* Scrollbar */
-
--> END
-
 === act1_fangshift ===
 // 📍 Verdant Verge · Deep · Full Moon
 Fang goes still. Not combat-still. Wrong-still. The kind of stillness that happens before something irreversible.
@@ -8183,10 +7752,3 @@ The ghost clusters drift. East, east, east. Waiting to be understood.
 + [Watch the ghosts' movement patterns.] -> act1_ghostwatch
 + ['They’re travelers. Where were they going?'] -> act1_ghostdirection
 + ['Lawrence, what does your magic actually see?'] -> act1_ghostmagic
-
-=== studiozisha_copyright ===
-/* Stone of Commitment: Vanquish Death - Canonical Twee v4.0
-© Studio Zisha 2026
-All rights reserved. */
-
--> END

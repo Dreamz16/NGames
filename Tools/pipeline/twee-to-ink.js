@@ -57,6 +57,10 @@ function slugify(name) {
 function convertCondition(cond) {
     return cond
         .replace(/\$(\w+)/g, '$1')
+        // SugarCube array/string .length has no Ink equivalent → use 0 as fallback
+        .replace(/\b(\w+)\.length\b/g, '0')
+        // Remove other property accesses that Ink can't evaluate
+        .replace(/\b(\w+)\.\w+\b/g, '$1')
         .replace(/\band\b/gi, '&&')
         .replace(/\bor\b/gi, '||')
         .replace(/\bnot\b/gi, '!')
@@ -66,6 +70,9 @@ function convertCondition(cond) {
         .replace(/\blt\b/gi, '<')
         .replace(/\beq\b/gi, '==')
         .replace(/\bneq\b/gi, '!=')
+        // SugarCube uses === and !== — Ink only uses == and !=
+        .replace(/===/g, '==')
+        .replace(/!==/g, '!=')
         .trim();
 }
 
@@ -85,20 +92,20 @@ function convertSet(inner) {
 // Handles both [tag] and {"position":…} metadata in headers
 function parsePassages(src) {
     const passages = [];
-    // Match :: Name [optional tags] or :: Name {"json"}
-    const headerRe = /^::\s*(.+?)(?:\s*(?:\[[^\]]*\]|\{[^}]*\})\s*)*\s*$/;
     let current = null;
 
     for (const line of src.split('\n')) {
-        const m = line.match(/^::\s*(.+?)(?:\s*(?:\[[^\]]*\]|\{"[^}]*\})\s*)*\s*$/);
         if (line.startsWith('::')) {
-            // Robust: strip trailing JSON position tags and [tag] blocks
+            // Capture the [tags] block before stripping, for shouldSkip
+            const tagsMatch = line.match(/\[([^\]]*)\]/);
+            const tags = tagsMatch ? tagsMatch[1] : '';
+            // Strip JSON position objects and [tag] blocks from the name
             let name = line.slice(2)
-                .replace(/\{[^}]*\}/g, '')   // strip {"position":...}
-                .replace(/\[[^\]]*\]/g, '')   // strip [tags]
+                .replace(/\{[^}]*\}/g, '')
+                .replace(/\[[^\]]*\]/g, '')
                 .trim();
             if (current) passages.push(current);
-            current = { name, body: [] };
+            current = { name, tags, body: [] };
         } else if (current) {
             current.body.push(line);
         }
@@ -115,23 +122,76 @@ function extractStoryData(passages) {
 }
 
 // ── Extract variable declarations from all passages ────────────────────────
+// Collects every $var used in <<set>> macros and infers a default value.
 function extractVarDeclarations(passages) {
     const vars = new Map();  // name → default value string
+
+    const inferDefault = (name, val) => {
+        if (val === undefined) return null;          // += / -= → infer from type later
+        const v = val.trim();
+        if (v === 'true' || v === 'false') return v;
+        if (/^".*"$/.test(v) || /^'.*'$/.test(v)) return v.replace(/\$(\w+)/g, '$1');
+        if (/^-?\d+(\.\d+)?$/.test(v)) return v;
+        if (/^\$\w+$/.test(v)) return v.replace(/\$(\w+)/g, '$1'); // var copy
+        return v.replace(/\$(\w+)/g, '$1');
+    };
+
     for (const p of passages) {
         for (const line of p.body) {
-            // <<set $var to value>> or <<set $var = value>> (not +=/-=)
-            const matches = line.matchAll(/<<set\s+\$(\w+)\s+(?:to|=)\s+([^>+\-*]+?)>>/g);
-            for (const m of matches) {
-                if (!vars.has(m[1])) vars.set(m[1], m[2].trim().replace(/\$(\w+)/g, '$1'));
+            // Match ALL forms: <<set $var op value>>
+            const re = /<<set\s+\$(\w+)\s*(?:(to|=|\+=|-=|\*=))\s*([^>]*?)>>/g;
+            let m;
+            while ((m = re.exec(line)) !== null) {
+                const [, name, op, rawVal] = m;
+                if (!vars.has(name)) {
+                    if (op === '+=' || op === '-=' || op === '*=') {
+                        vars.set(name, '0');   // numeric counter
+                    } else {
+                        const def = inferDefault(name, rawVal);
+                        vars.set(name, def !== null ? def : '0');
+                    }
+                }
+            }
+            // Also catch: <<set $var to value>> (SugarCube keyword form)
+            const reKw = /<<set\s+\$(\w+)\s+to\s+([^>]+?)>>/g;
+            let mk;
+            while ((mk = reKw.exec(line)) !== null) {
+                const [, name, rawVal] = mk;
+                if (!vars.has(name)) {
+                    const def = inferDefault(name, rawVal);
+                    vars.set(name, def !== null ? def : '0');
+                }
             }
         }
     }
+    // Second pass: catch variables referenced anywhere (conditions, <<print>>, <<textbox>>)
+    // that were never in a <<set>> — declare them with a safe default.
+    for (const p of passages) {
+        for (const line of p.body) {
+            const re = /\$([a-zA-Z_]\w*)/g;
+            let m;
+            while ((m = re.exec(line)) !== null) {
+                const name = m[1];
+                if (!vars.has(name)) {
+                    // Guess type from context: textbox sets a string, others default to 0
+                    const isString = new RegExp(`<<textbox\\s+"\\$${name}"`).test(line);
+                    vars.set(name, isString ? '"Fortune"' : '0');
+                }
+            }
+        }
+    }
+
     return vars;
 }
 
 // ── Should this passage be skipped? ───────────────────────────────────────
-const SKIP_NAMES = /^(StoryTitle|StoryData|StorySettings|StoryMenu|StoryShare|StoryAuthor|StoryBanner|StoryCaption|StoryInit|StoryVars|-webkit)/i;
-function shouldSkip(name) { return SKIP_NAMES.test(name); }
+const SKIP_NAMES = /^(StoryTitle|StoryData|StorySettings|StoryMenu|StoryShare|StoryAuthor|StoryBanner|StoryCaption|StoryInit|StoryVars|StoryScript|StoryStylesheet|_Studio|-webkit)/i;
+function shouldSkip(name, tags) {
+    if (SKIP_NAMES.test(name)) return true;
+    // Skip passages tagged [script] or [stylesheet]
+    if (tags && /\b(script|stylesheet|widget)\b/i.test(tags)) return true;
+    return false;
+}
 
 // ── Expand inline <<if>>..<<elseif>>..<<else>>..<</if>> to separate lines ──
 // SugarCube allows entire if-chains on one line; Ink requires line-per-clause.
@@ -311,8 +371,16 @@ function convertTweeToInk(src, episodeId) {
         ``
     );
 
-    // Variable declarations
+    // Collect all knot names to detect VAR / knot collisions
+    const knotNames = new Set(
+        passages
+            .filter(p => !shouldSkip(p.name, p.tags))
+            .map(p => slugify(p.name))
+    );
+
+    // Variable declarations — skip any name that collides with a knot
     for (const [varName, defaultVal] of allVars) {
+        if (knotNames.has(varName)) continue;   // name already used as a knot
         inkParts.push(`VAR ${varName} = ${defaultVal}`);
     }
     if (allVars.size > 0) inkParts.push('');
@@ -320,14 +388,14 @@ function convertTweeToInk(src, episodeId) {
     // Find the start passage and put it first
     const startPassage = passages.find(p => p.name === startName);
     const otherPassages = passages.filter(
-        p => !shouldSkip(p.name) && p.name !== startName
+        p => !shouldSkip(p.name, p.tags) && p.name !== startName
     );
     const ordered = startPassage
         ? [startPassage, ...otherPassages]
         : otherPassages;
 
     for (const p of ordered) {
-        if (shouldSkip(p.name)) continue;
+        if (shouldSkip(p.name, p.tags)) continue;
 
         const knotName = slugify(p.name);
         const bodyLines = processBody(p.body);
@@ -356,9 +424,13 @@ function removeEmptyConditionals(ink) {
     let prev;
     do {
         prev = ink;
-        // Multi-branch form:  {\n(whitespace/- branch: \n)*\n}  with no real content
-        // Matches a { that contains only branch headers and blank lines
+        // Remove entire block where ALL branches have no content:
+        //   {\n    - cond:\n    - else:\n}
         ink = ink.replace(/\{\n(\s*-[^\n]+:\s*\n(\s*\n)*)+\s*\}/g, '');
+        // Remove an empty trailing "- else:" branch (nothing between it and closing })
+        ink = ink.replace(/(\n\s*- else:\s*\n)(\s*\})/g, '\n$2');
+        // Remove an empty trailing "- condition:" branch (nothing between it and closing })
+        ink = ink.replace(/(\n\s*-[^\n]+:\s*\n)(\s*\})/g, '\n$2');
         // collapse 3+ consecutive blank lines to 2
         ink = ink.replace(/\n{3,}/g, '\n\n');
     } while (ink !== prev);
