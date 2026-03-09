@@ -126,7 +126,7 @@ namespace NGames.UI
             _content.alignment   = TextAlignmentOptions.TopLeft;
             _content.richText    = true;
             _content.overflowMode = TextOverflowModes.Overflow;
-            _content.enableWordWrapping = true;
+            _content.textWrappingMode = TMPro.TextWrappingModes.Normal;
             var textRt           = textGo.GetComponent<RectTransform>();
             textRt.anchorMin     = Vector2.zero;
             textRt.anchorMax     = Vector2.one;

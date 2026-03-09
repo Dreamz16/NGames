@@ -6,7 +6,7 @@ public class DebugSceneUI
     [MenuItem("Tools/Debug Scene UI")]
     public static void DebugUI()
     {
-        var canvas = GameObject.FindObjectOfType<Canvas>();
+        var canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas != null) {
             var bg = canvas.transform.Find("Background");
             if (bg != null) {
