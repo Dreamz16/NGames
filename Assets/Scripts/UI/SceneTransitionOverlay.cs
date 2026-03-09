@@ -56,26 +56,32 @@ namespace NGames.UI
             _routine = StartCoroutine(Transition());
         }
 
+        // Total blackout window = FadeIn + Hold = 0.65 s
+        // SceneBackgroundController delays its swap by the same amount.
+        private const float FadeIn  = 0.45f;
+        private const float Hold    = 0.20f;
+        private const float FadeOut = 1.20f;
+
         private IEnumerator Transition()
         {
-            // Snap to black
-            float e = 0f, dur = 0.28f;
-            while (e < dur)
+            // Fade to black
+            float e = 0f;
+            while (e < FadeIn)
             {
                 e += Time.deltaTime;
-                _group.alpha = Mathf.SmoothStep(0f, 1f, e / dur);
+                _group.alpha = Mathf.SmoothStep(0f, 1f, e / FadeIn);
                 yield return null;
             }
             _group.alpha = 1f;
 
-            yield return new WaitForSeconds(0.12f);
+            yield return new WaitForSeconds(Hold);
 
             // Slow reveal
-            e = 0f; dur = 0.85f;
-            while (e < dur)
+            e = 0f;
+            while (e < FadeOut)
             {
                 e += Time.deltaTime;
-                _group.alpha = Mathf.SmoothStep(1f, 0f, e / dur);
+                _group.alpha = Mathf.SmoothStep(1f, 0f, e / FadeOut);
                 yield return null;
             }
             _group.alpha = 0f;
