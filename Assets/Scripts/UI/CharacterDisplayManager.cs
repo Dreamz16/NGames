@@ -43,7 +43,7 @@ namespace NGames.UI
         private int               _activeSlot = 0;
 
         private const float ActiveAlpha   = 1.00f;
-        private const float InactiveAlpha = 0.38f;
+        private const float InactiveAlpha = 0.18f;
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
         private void Start()
