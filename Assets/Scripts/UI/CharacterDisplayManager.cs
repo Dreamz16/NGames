@@ -70,7 +70,8 @@ namespace NGames.UI
         private void OnChoices(ChoicePresentedEvent _)
         {
             EnsureView();
-            _view?.ShowCharacterImage(false);
+            var playerName = GameStateManager.Instance?.SaveData?.PlayerName ?? "Ishani";
+            ShowCharacter(playerName);
         }
 
         private void OnEnd(StoryEndedEvent _)
