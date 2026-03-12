@@ -17,9 +17,10 @@ Unity 6 visual novel using Ink for narrative. macOS dev, targeting Desktop + Web
 ## Architecture
 - `GameEventBus` — type-safe pub/sub; all systems communicate through events, never directly
 - `NarrativeManager` — Ink runtime, tag parsing, no UI dependencies
-- `DialogueController` — auto-advance (words/sec), tap-to-skip
-- `DialogueView` — bottom panel UI (portrait left, text right, choices)
-- `CharacterDisplayManager` — expression sprites, speaking pulse animation
+- `DialogueController` — typewriter reveal, auto-advance (words/sec), tap-to-skip
+- `DialogueView` — bottom panel UI; two character portrait slots (left/right) + text area + choices
+- `CharacterDisplayManager` — two-slot portrait system; slot alpha fade for active/inactive speaker; hides both slots and clears slot state on narrator lines
+- `VoiceManager` — OS TTS (self-bootstraps); syncs typewriter CPS to estimated TTS duration via `SyncedCPS` static property
 - `SceneBackgroundController` — gradient palette + optional sprite backgrounds
 - `AmbientEffectsController` — vignette, dust motes (self-bootstraps)
 - `SceneTransitionOverlay` — black fade between scenes (self-bootstraps)
@@ -64,6 +65,29 @@ Falls back to `Resources/Characters/{key}.png`, then coloured placeholder.
 | batu | green `(0.55, 0.72, 0.35)` |
 | jiwon | amber `(0.85, 0.55, 0.30)` |
 | nadia | violet `(0.75, 0.40, 0.75)` |
+
+## Writer Pipeline
+- Source files: `Writer/*.twee` (SugarCube 2 format)
+- Converter: `Tools/pipeline/twee-to-ink.js` → outputs to `Assets/Ink/Episodes/<name>/<name>.ink`
+- Watcher: `cd Tools/pipeline && npm start` — watches for changes, converts, compiles, deploys
+- Episode mapping: `Tools/pipeline/episodes.json` — maps twee filename → episodeId → Resources path
+- Compiled JSON lands at `Assets/Resources/Ink/<episodeId>.json`
+
+## Ink Gotchas
+- **Entry divert required**: Ink executes from the top of the file. Without `-> startKnot` before the first `=== knot ===`, the story ends immediately with "- end -"
+- **inklecate binary**: lives in `~/.npm/_npx/<hash>/node_modules/inklecate/bin/inklecate`; needs `chmod +x` on first use (watch.js handles this automatically)
+- **inkVersion 21**: inklecate npm package produces inkVersion 21, compatible with Unity Ink runtime (inkVersionCurrent=21, inkVersionMinimumCompatible=18)
+
+## Episode Asset Wiring
+Both copies of the manifest must have `InkAsset` GUID wired — editing one without the other breaks loading:
+- `Assets/ScriptableObjects/Episodes/<Name>.asset`
+- `Assets/Resources/Episodes/<Name>.asset`
+
+Format: `InkAsset: {fileID: 4900000, guid: <GUID>, type: 3}`
+
+## VoiceManager Neural Voices
+The following voices must be downloaded in **System Settings → Accessibility → Spoken Content → System Voice → Manage Voices**:
+`Ava` (US female), `Evan` (US male), `Allison` (US female), `Daniel` (UK male), `Aaron` (US male), `Zoe` (US female)
 
 ## Key Unity Gotchas
 - **Never** use `??` with `GetComponent` — use explicit `!= null` (Unity fake-null)

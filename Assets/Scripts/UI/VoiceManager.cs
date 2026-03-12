@@ -80,49 +80,53 @@ namespace NGames.UI
             new Regex(@"^(""?)\(([^)]+)\)\s*", RegexOptions.Compiled);
 
         // ── Per-character voice configuration ─────────────────────────────────
+        // Neural/Enhanced voices must be downloaded in System Settings > Accessibility >
+        // Spoken Content > System Voice > Manage Voices.
+        // Recommended downloads: Ava (US), Evan (US), Allison (US), Daniel (UK), Aaron (US)
         private static readonly Dictionary<string, VoiceConfig> CharVoices = new()
         {
-            // Fang — female werewolf: husky, assertive, fast. Zoe is an expressive
-            //   US female voice; pitch pulled below neutral for a feral edge.
-            //   (Download via System Preferences > Accessibility > Spoken Content if needed.)
-            { "fang",       new VoiceConfig { MacOSVoice = "Zoe",      Rate = 188, Pitch = 0.82f } },
+            // Fang — female werewolf: husky, assertive, fast.
+            //   Zoe (Enhanced) is expressive; pitch pulled below neutral for a feral edge.
+            { "fang",       new VoiceConfig { MacOSVoice = "Zoe",     Rate = 188, Pitch = 0.82f } },
 
-            // Marcus — man-bear: Fred is the deepest macOS voice; very slow, deliberate.
-            //   Pitch floored for genuine sub-bass rumble.
-            { "marcus",     new VoiceConfig { MacOSVoice = "Fred",     Rate =  88, Pitch = 0.62f } },
+            // Marcus — man-bear: Evan (Enhanced) at very low pitch gives a natural
+            //   deep rumble — far more human-sounding than the synthesised Fred voice.
+            { "marcus",     new VoiceConfig { MacOSVoice = "Evan",    Rate =  85, Pitch = 0.58f } },
 
             // Lawrence — Korean male: Yuna is macOS's Korean voice (female timbre).
             //   Pitch pulled down to read more masculine while keeping the accent.
-            { "lawrence",   new VoiceConfig { MacOSVoice = "Yuna",     Rate = 152, Pitch = 0.78f } },
+            { "lawrence",   new VoiceConfig { MacOSVoice = "Yuna",    Rate = 152, Pitch = 0.78f } },
 
-            // Tiberius — weathered bartender: Tom has a warm, measured baritone.
-            //   Slightly lowered pitch for that "seen-it-all" gravelly quality.
-            { "tiberius",   new VoiceConfig { MacOSVoice = "Tom",      Rate = 118, Pitch = 0.80f } },
+            // Tiberius — weathered bartender: Daniel (UK) has a warm, natural baritone —
+            //   measured and world-weary without sounding robotic.
+            { "tiberius",   new VoiceConfig { MacOSVoice = "Daniel",  Rate = 118, Pitch = 0.82f } },
 
-            // Ishani — protagonist
-            { "ishani",     new VoiceConfig { MacOSVoice = "Samantha", Rate = 165, Pitch = 1.00f } },
+            // Ishani — protagonist: Ava (Enhanced) is the most natural-sounding US
+            //   English female voice available on macOS.
+            { "ishani",     new VoiceConfig { MacOSVoice = "Ava",     Rate = 162, Pitch = 1.00f } },
 
-            // Elemental spirits — Victoria carries an ethereal lilt
-            { "water",      new VoiceConfig { MacOSVoice = "Victoria", Rate = 132, Pitch = 1.12f } },
-            { "sky",        new VoiceConfig { MacOSVoice = "Victoria", Rate = 140, Pitch = 1.18f } },
-            { "stone",      new VoiceConfig { MacOSVoice = "Fred",     Rate =  95, Pitch = 0.55f } },
+            // Elemental spirits — Allison (Enhanced) reads as clear and human;
+            //   pitch adjustments give each element its distinct ethereal quality.
+            { "water",      new VoiceConfig { MacOSVoice = "Allison", Rate = 128, Pitch = 1.15f } },
+            { "sky",        new VoiceConfig { MacOSVoice = "Allison", Rate = 138, Pitch = 1.22f } },
+            { "stone",      new VoiceConfig { MacOSVoice = "Evan",    Rate =  88, Pitch = 0.48f } },
 
             // Supporting cast
-            { "tidewarden", new VoiceConfig { MacOSVoice = "Tom",      Rate = 128, Pitch = 0.88f } },
-            { "sera",       new VoiceConfig { MacOSVoice = "Kate",     Rate = 155, Pitch = 1.02f } },
-            { "tariq",      new VoiceConfig { MacOSVoice = "Alex",     Rate = 142, Pitch = 0.92f } },
-            { "batu",       new VoiceConfig { MacOSVoice = "Alex",     Rate = 118, Pitch = 0.88f } },
-            { "kira",       new VoiceConfig { MacOSVoice = "Samantha", Rate = 192, Pitch = 1.08f } },
-            { "yildiz",     new VoiceConfig { MacOSVoice = "Karen",    Rate = 155, Pitch = 1.00f } },
-            { "almas",      new VoiceConfig { MacOSVoice = "Victoria", Rate = 145, Pitch = 1.14f } },
-            { "warden",     new VoiceConfig { MacOSVoice = "Tom",      Rate = 125, Pitch = 0.85f } },
-            { "player",     new VoiceConfig { MacOSVoice = "Samantha", Rate = 162, Pitch = 1.00f } },
+            { "tidewarden", new VoiceConfig { MacOSVoice = "Daniel",  Rate = 125, Pitch = 0.88f } },
+            { "sera",       new VoiceConfig { MacOSVoice = "Allison", Rate = 152, Pitch = 1.05f } },
+            { "tariq",      new VoiceConfig { MacOSVoice = "Aaron",   Rate = 140, Pitch = 0.90f } },
+            { "batu",       new VoiceConfig { MacOSVoice = "Aaron",   Rate = 115, Pitch = 0.85f } },
+            { "kira",       new VoiceConfig { MacOSVoice = "Ava",     Rate = 192, Pitch = 1.10f } },
+            { "yildiz",     new VoiceConfig { MacOSVoice = "Karen",   Rate = 155, Pitch = 1.00f } },
+            { "almas",      new VoiceConfig { MacOSVoice = "Allison", Rate = 142, Pitch = 1.18f } },
+            { "warden",     new VoiceConfig { MacOSVoice = "Daniel",  Rate = 122, Pitch = 0.88f } },
+            { "player",     new VoiceConfig { MacOSVoice = "Ava",     Rate = 162, Pitch = 1.00f } },
         };
 
         private static readonly VoiceConfig DefaultFemale =
-            new() { MacOSVoice = "Samantha", Rate = 158, Pitch = 1.00f };
+            new() { MacOSVoice = "Ava",   Rate = 155, Pitch = 1.00f };
         private static readonly VoiceConfig DefaultMale   =
-            new() { MacOSVoice = "Alex",     Rate = 145, Pitch = 0.95f };
+            new() { MacOSVoice = "Aaron", Rate = 142, Pitch = 0.92f };
 
         // ── Sync properties (read by DialogueController's TypewriterRoutine) ──
         /// <summary>

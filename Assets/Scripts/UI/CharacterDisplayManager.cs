@@ -74,11 +74,13 @@ namespace NGames.UI
 
             if (string.IsNullOrEmpty(ev.SpeakerName))
             {
-                // Narrator — hide both slots, reset to left alignment
+                // Narrator — hide both slots and clear slot state so no portrait
+                // is accidentally restored when the next character speaks.
                 _view?.ShowCharacterSlot(0, false);
                 _view?.ShowCharacterSlot(1, false);
                 _view?.SetDialogueAlignment(TMPro.TextAlignmentOptions.Left);
                 _view?.SetSpeakerNameplate("", Color.clear);
+                _slotKey[0] = _slotKey[1] = null;
                 return;
             }
 
@@ -103,14 +105,8 @@ namespace NGames.UI
             }
             else
             {
-                // Character already assigned — narrator may have hidden the slot; re-show it.
                 _view?.ShowCharacterSlot(targetSlot, true);
             }
-
-            // Also restore the other occupied slot if narrator hid it.
-            int other = 1 - targetSlot;
-            if (_slotKey[other] != null)
-                _view?.ShowCharacterSlot(other, true);
 
             _activeSlot = targetSlot;
             RefreshAlphas();
